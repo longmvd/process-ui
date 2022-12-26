@@ -1,0 +1,33 @@
+.input {
+    height: 36px;
+    border: 1px solid var(--border-color);
+    outline: unset;
+    border-radius: 4px;
+    padding: 0 12px;
+    width: 100%;
+}
+
+.search-icon.left {
+    left: 8px;
+}
+
+.input:focus {
+    border-color: var(--primary-color);
+}
+
+.no-change-border{
+    border-color: var(--border-color)!important;
+}
+
+.input--error {
+    border-color: var(--error-color);
+}
+
+.input:hover{
+    background-color: var(--hover-white-color);
+}
+
+.input-20{
+    width: 20px;
+    height: 20px;
+}

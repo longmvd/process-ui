@@ -1,0 +1,29 @@
+.sidebar{
+    background-color: white;
+    min-width: 200px;
+    height: 100%;
+    padding-top: 16px;
+}
+
+.sidebar__item{
+    display: flex;
+    align-items: center;
+    height: 44px;
+    padding-left: 24px;
+}
+
+.sidebar__item.active{
+    color: var(--primary-color);
+}
+
+.sidebar-icon{
+    margin-right: 8px!important;
+}
+
+.sidebar__item.active .sidebar-icon{
+    background-color: var(--primary-color);
+}
+
+.sidebar__item.active{
+    background-color: var(--sidebar-item-background);
+}

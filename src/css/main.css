@@ -1,0 +1,304 @@
+/* @import url(../assets/icons/icofont/icofont.min.css);
+@import url(../assets/icons/fontawesome-free-6.2.0-web/css/all.min.css);
+@import url(../assets/icons/fontawesome-free-6.2.0-web/css/all.min.css); */
+/* @import url(./components/tooltip.css); */
+@import url(./components/header.css);
+@import url(./components/sidebar.css);
+@import url(./components/content.css);
+@import url(./components/button.css);
+/* @import url(./components/table.css); */
+/* @import url(./components/popup.css); */
+@import url(./components/icon.css);
+@import url(./components/input.css);
+/* @import url(./components/combobox.css); */
+/* @import url(./components/dialog.css); */
+
+
+:root {
+    --white-color: #FFFFFF;
+    --overlay-color: #00000075;
+    --black-color: #000;
+    --content-background-color: #f5f8f9;
+    --text-color: #333;
+    --header-color: #555;
+    --header-height: 56px;
+    --hover-white-color: #F6F6F6;
+    --border-color: #e7e8e9;
+    --dark-border-color: #8d9096;
+    --primary-color: #0c9cdd;
+    --sidebar-item-background: #f3fbfd;
+    --error-color: #E61D1D;
+    --red-500: #E60000;
+    --red-400: #EB3333;
+    --red-300: #F06666;
+    --table-h-bgcolor: #F5F5F5;
+    --icon-default-color: #686c7b;
+    --icon-light-color: #9fa4b4;
+    --border-radius: 4px;
+    --sidebar-width: 200px;
+    --sidebar--bgcolor: #041434;
+    --sidebar-color: #869AB8;
+    --text-placeholder-color: #9fa4b4;
+    --white-background: #fff;
+    --table-tool-height: 60px;
+    --remain-height: 200px;
+
+}
+
+* {
+    box-sizing: border-box;
+    font-family: Roboto,Helvetica,Arial,sans-serif;
+}
+
+
+body,
+button,
+input {
+    margin: 0;
+    font-size: 14px;
+    line-height: 18px;
+}
+
+h1 {
+    font-size: 20px;
+    line-height: 26px;
+}
+
+h2 {
+    font-size: 18px;
+    line-height: 2px;
+}
+
+/* body {
+    font-family: nunito Regular Fonts;
+    font-size: 13px;
+} */
+/* 
+@font-face {
+    font-family: nunito Regular Fonts;
+    src: url(../assets/fonts/notosans-regular.2cb88a13.woff2);
+} */
+a {
+    text-decoration: none;
+}
+.el-wrapper {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.el-wrapper.error .input {
+    border-color: var(--error-color);
+}
+
+.el-wrapper.error:hover .err-message {
+    font-size: 12px;
+    font-weight: 400;
+    display: block;
+}
+
+.el__label {
+    margin-top: 16px;
+    font-weight: 700;
+}
+
+.title-require {
+    color: var(--error-color)
+}
+
+.flex {
+    display: flex;
+}
+
+.relative {
+    position: relative;
+}
+
+.bg-none {
+    background: none !important;
+}
+
+.mw-120 {
+    min-width: 120px;
+}
+
+.mw-136 {
+    min-width: 136px;
+}
+
+.mw-162 {
+    min-width: 160px;
+}
+
+.mw-225 {
+    min-width: 225px;
+}
+
+.mw-250 {
+    min-width: 250px;
+}
+
+.mgr-8 {
+    margin-right: 8px;
+}
+
+.mgr-12{
+    margin-right: 12px;
+}
+
+.el--center {
+    align-items: center;
+}
+
+.float-right{
+    float:right;
+}
+
+.float-left{
+    float:left;
+}
+
+.w-1\/4 {
+    width: 25%;
+}
+
+.w-2\/5 {
+    width: 40%;
+}
+
+.w-1\/2 {
+    width: 50%;
+}
+
+.w-3\/5 {
+    width: 60%;
+}
+
+.flex-1 {
+    flex: 1;
+}
+
+.flex-m{
+    display: flex;
+    align-items: center;
+}
+
+.mgt-0 {
+    margin-top: 0;
+}
+
+.mgb-0{
+    margin-bottom: 0;
+}
+
+.mg-0{
+    margin: 0;
+}
+
+.mgr-4{
+    margin-right: 4px;
+}
+
+.mgl-12{
+    margin-left: 12px;
+}
+
+.mgl-auto{
+    margin-left: auto;
+}
+
+.mgr-16{
+    margin-right: 16px;
+}
+
+.mgr-10{
+    margin-right: 10px;
+}
+
+.pad-right-0{
+    padding-right: 0;
+}
+
+.display-none {
+    display: none;
+}
+
+.cs-pointer {
+    cursor: pointer;
+}
+
+.w-auto {
+    width: auto;
+}
+
+.scroller.s::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.scroller.m::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.scroller.radius::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+}
+
+.scroller.radius::-webkit-scrollbar-track {
+    border-radius: 10px;
+}
+
+.scroller::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.scroller::-webkit-scrollbar-thumb {
+    background-color: #b8bcc3;
+}
+
+.fsn{
+    font-style: normal;
+}
+
+.fw-500{
+    font-weight: 500;
+}
+
+.fw-600{
+    font-weight: 600;
+}
+
+.w-full{
+    width: 100%;
+}
+
+.h-full{
+    height: 100%;
+}
+
+.pad-left-40{
+    padding-left: 40px;
+}
+
+.pad-left-12{
+    padding-left: 12px;
+}
+
+.color-red-400{
+    color: var(--red-400);
+}
+
+.flex-c-m{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.bg-white{
+    background-color: white;
+}
+
+::placeholder{
+    color: var(--text-placeholder-color);
+}

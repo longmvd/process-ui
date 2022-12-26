@@ -1,0 +1,133 @@
+.header {
+    position: relative;
+    height: var(--header-height);
+    background: #fff;
+    padding: 0 16px 0 0;
+    border-bottom: 1px solid #e7e8e9;
+    display: flex;
+}
+
+.grid-app-menu {
+    width: 36px;
+    height: 36px;
+    margin: auto 16px;
+    background-image: url(../../assets/img/icon-app-gray.eec2ff5c.svg);
+    background-position: 50%;
+    background-repeat: no-repeat;
+    cursor: pointer;
+}
+
+.header__left {
+    display: flex;
+}
+
+.header__right {
+    display: flex;
+    align-items: center;
+}
+
+.header-logo {
+    font-size: 18px;
+    font-weight: 500;
+    color: #000;
+    padding: 0 10px 0 44px;
+    position: relative;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 34px;
+}
+
+.header-logo::before {
+    content: "";
+    display: inline-block;
+    height: 32px;
+    width: 32px;
+    top: 12px;
+    left: 0;
+    position: absolute;
+    background: transparent url(../../assets/img/logo.5df3d448.svg) no-repeat 0 0;
+}
+
+.navbar {
+    display: flex;
+}
+
+.navbar-item {
+    margin-right: 36px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    justify-content: space-between;
+}
+
+.navbar-item:hover {
+    color: var(--primary-color);
+}
+
+.navbar-item:hover .navbar-item-active {
+    display: block;
+}
+
+.navbar-item-title {
+    font-weight: 500;
+    margin-top: 20px;
+}
+
+.navbar-item.active {
+    color: var(--primary-color);
+}
+
+.navbar-item.active .navbar-item-active {
+    display: block;
+}
+
+.navbar-item-active {
+    background-color: #0c9cdd;
+    height: 3px;
+    width: 100%;
+    display: none;
+}
+
+#navbar-three-dot {
+    padding-right: 20px;
+    background-color: var(--white-color);
+}
+
+.header-notify {
+    border-radius: 50%;
+    cursor: pointer;
+    width: 32px;
+    margin-right: 24px;
+    height: 32px;
+    font-size: 14px;
+    font-size: 14px;
+    background-position: center;
+    background-repeat: no-repeat;
+    margin-top: 2px;
+    background-image: url(../../assets/img/icon-notification-dark-thick.svg);
+}
+
+.header-user {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    height: 100%;
+    width: 48px;
+    position: relative;
+    background: white;
+}
+
+.header-user:hover {
+    cursor: pointer;
+    background-color: #f5f5f5;
+}
+
+.header-avatar {
+    margin: auto;
+}
+
+.header-search {
+    min-width: 264px;
+}
