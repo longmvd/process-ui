@@ -1,32 +1,47 @@
 <template>
   <div>
     <DxDataGrid
-      :data-source="data"
+      :data-source="dataSource"
       :allow-column-resizing="true"
       :show-column-lines="false"
       :show-row-lines="true"
       class="custom-height"
       @cell-prepared="onCellPrepared"
       @row-prepared="onRowPrepared"
+      :hover-state-enabled="true"
       :column-auto-width="true"
-      
     >
       <DxColumn
         v-for="(column, index) in columns"
         :key="index"
-        class="table-header"
         :min-width="column.minWidth"
         :data-field="column.field"
         :caption="column.caption"
         :cell-template="column.cellTemplate"
         :height="48"
         v-model:visible="column.visible"
-        
       />
+      <DxColumn class="row-action" :width="96" cell-template="button-group">
+      </DxColumn>
+
       <DxScrolling column-rendering-mode="virtual" mode="infinite" />
 
       <DxPaging :page-size="10" :enabled="false" />
 
+      <template #button-group="{data}">
+        <div class="flex-m button-group">
+          <base-button
+            @click="editRow(data)"
+            buttonClass="btn--round bg-none flex-c-m change-color-btn-dark"
+            :components="[{ class: 'icon-24 icon-pencil' }]"
+          />
+          <base-button
+            @click="deleteRow(data)"
+            buttonClass="btn--round bg-none flex-c-m change-color-btn-dark"
+            :components="[{ class: 'icon-24 svg-icon-process icon-delete' }]"
+          />
+        </div>
+      </template>
       <template #avatar-cell="{ data }">
         <div class="flex-m">
           <BaseAvatar class="mgr-12" :username="data.displayValue" />
@@ -35,7 +50,9 @@
       </template>
       <template #title-tooltip="{ data }">
         <div class="flex-m">
-          <div :title="data.displayValue" class="wrap-text">{{ data.displayValue }}</div>
+          <div :title="data.displayValue" class="wrap-text">
+            {{ data.displayValue }}
+          </div>
         </div>
       </template>
     </DxDataGrid>
@@ -49,13 +66,18 @@ import {
   DxColumn,
   DxPaging,
   DxEditing,
+  DxButton,
   DxScrolling,
+  DxColumnChooser,
 } from "devextreme-vue/data-grid";
 import BaseAvatar from "../avatar/BaseAvatar.vue";
+import BaseButton from "../button/BaseButton.vue";
 export default {
   name: "BaseTable",
   props: {
     api: String,
+    columns: Array,
+    dataSource: Array,
   },
   components: {
     DxDataGrid,
@@ -64,492 +86,15 @@ export default {
     DxEditing,
     DxScrolling,
     BaseAvatar,
+    BaseButton,
+    DxColumnChooser,
+    DxButton,
   },
+  emits:["deleteRow", "editRow"],
   data() {
     return {
       isEmailVisible: false,
-      columns: [
-        { width: 200, field: "UserID", caption: "ID", cellTemplate:"title-tooltip", visible:true },
-        { width: 200, field: "UserCode", caption: "Mã nhân viên", cellTemplate:"title-tooltip", visible:true },
-        {
-          width: 200,
-          field: "UserName",
-          caption: "Tên nhân viên",
-          cellTemplate: "avatar-cell",
-        },
-        { width: 200, field: "DepartmentName", caption: "Phòng ban", cellTemplate:"title-tooltip" },
-        { width: 200, field: "JobPositionName", caption: "Vị trí", cellTemplate:"title-tooltip" },
-        { width: 200, field: "Email", caption: "Email", cellTemplate:"title-tooltip" },
-        { width: 200, field: "Roles", caption: "Vai trò", cellTemplate:"title-tooltip" },
-      ],
-      data: [
-        {
-          UserID: "1",
-          UserCode: "NV0001",
-          UserName: "Mai Đại Nghĩa",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "2",
-          UserCode: null,
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: undefined,
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "3",
-          UserCode: "NV0003",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: null,
-          Status: 1,
-        },
-        {
-          UserID: "4",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "5",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "6",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "7",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "8",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "9",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "10",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "11",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "12",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "13",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "14",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "15",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "16",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "17",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "18",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "19",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "20",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "21",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "22",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "23",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "24",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-        {
-          UserID: "25",
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentName: "Trung tâm sản xuất",
-          JobPositionName: "Kế toán",
-          Email: "maidailong@gmail.com",
-          Roles: [
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị ứng dụng",
-            },
-            {
-              RoleID: "dnifn-3432dsfs-dsfsf-dsffcf",
-              RoleName: "Quản trị hệ thống",
-            },
-          ],
-          Status: 1,
-        },
-      ],
+      
     };
   },
   methods: {
@@ -560,19 +105,32 @@ export default {
     loadData() {},
 
     onCellPrepared(e) {
-      console.log(e);
       if (e.rowType === "header") {
         e.cellElement.classList.add("table-header");
       }
       e.cellElement.classList.add("custom-cell");
+      if (e.columnIndex === e?.row?.cells?.length - 1) {
+        e.cellElement.classList.add("row-action");
+      }
     },
 
     onRowPrepared(e) {
-      // console.log(e);
       e.rowElement.classList.add("custom-row");
+      // e.cells[e.cells.length - 1].classList.add("row-action")
     },
-    test(rowData) {
-      return `<h1>${rowData.value}</h1>`;
+
+    editRow(data){
+      this.$emit("editRow", data.data)
+      // console.log(data.data)
+    },
+    
+    deleteRow(data){
+      this.$emit("deleteRow", data.data)
+      // console.log(data.data)
+    },
+
+    log(data) {
+      console.log(data)
     },
   },
 };
@@ -596,7 +154,7 @@ export default {
   position: relative;
 }
 
-.table-header::before {
+.table-header:not(:first-child):not(:last-child)::before {
   content: "";
   position: absolute;
   top: 30%;
@@ -607,16 +165,53 @@ export default {
   z-index: 1;
 }
 
+/* dx */
+
+.dx-datagrid-table
+  .dx-data-row.dx-state-hover:not(.dx-selection):not(.dx-row-inserted):not(
+    .dx-row-removed
+  ):not(.dx-edit-row):not(.dx-row-focused)
+  > td:not(.dx-focused) {
+  background-color: var(--row-table-bgc);
+  color: #333;
+}
+
+tr.custom-row.dx-data-row.dx-row.dx-row-lines.dx-state-hover {
+  background-color: var(--row-table-bgc);
+}
+
+.grid-container .dx-data-row.dx-state-hover > td {
+  cursor: pointer;
+  background-color: var(--row-table-bgc) !important;
+}
+
 .custom-cell {
   padding: 0 16px !important;
   height: 48px !important;
   vertical-align: middle !important;
 }
 
-.custom-row {
+.custom-row:hover {
 }
-.custom-height{
-  height: calc(100vh - calc(var(--header-height) + var(--remain-height)))!important;
+.custom-height {
+  height: calc(
+    100vh - calc(var(--header-height) + var(--remain-height))
+  ) !important;
 }
 
+.dx-data-row:hover .button-group {
+  visibility: visible;
+  background-color: var(--row-table-bgc);
+}
+
+.row-action {
+  position: sticky;
+  right: 0;
+}
+
+.button-group {
+  height: 100%;
+  width: 100%;
+  visibility: hidden;
+}
 </style>

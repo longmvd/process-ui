@@ -11,7 +11,10 @@ export default {
   name: "BaseAvatar",
   props: {
     // tên người dùng
-    username: String,
+    username:{
+      type: String,
+      default: " "
+    },
     width: String,
     height: String,
   },

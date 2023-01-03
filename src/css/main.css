@@ -6,6 +6,7 @@
 @import url(./components/sidebar.css);
 @import url(./components/content.css);
 @import url(./components/button.css);
+@import url(./components/dx.css);
 /* @import url(./components/table.css); */
 /* @import url(./components/popup.css); */
 @import url(./components/icon.css);
@@ -24,9 +25,13 @@
     --header-height: 56px;
     --hover-white-color: #F6F6F6;
     --border-color: #e7e8e9;
+    --light-border-color: #eaebef;
     --dark-border-color: #8d9096;
     --primary-color: #0c9cdd;
     --sidebar-item-background: #f3fbfd;
+    --primary-background-color: #f3fbfd;
+    --dropdown-item-hover: #eff1f6;
+    --row-table-bgc: #dbf4ff;
     --error-color: #E61D1D;
     --red-500: #E60000;
     --red-400: #EB3333;
@@ -47,7 +52,9 @@
 
 * {
     box-sizing: border-box;
-    font-family: Roboto,Helvetica,Arial,sans-serif;
+    margin: 0;
+    padding: 0;
+    font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
 
@@ -81,6 +88,36 @@ h2 {
 a {
     text-decoration: none;
 }
+
+.overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+span.required {
+    color: #e54848;
+}
+
+.required {
+    color: red;
+    padding-left: 2px;
+}
+
+.c1 {
+    accent-color: var(--primary-color);
+    outline:none;
+    width: 18px;
+    height: 18px;
+}
+
 .el-wrapper {
     display: flex;
     flex-direction: column;
@@ -92,7 +129,6 @@ a {
 }
 
 .el-wrapper.error:hover .err-message {
-    font-size: 12px;
     font-weight: 400;
     display: block;
 }
@@ -102,8 +138,17 @@ a {
     font-weight: 700;
 }
 
+.err-message{
+    color: var(--error-color);
+    font-size: 12px;
+}
+
 .title-require {
     color: var(--error-color)
+}
+
+.bold{
+    font-weight: 700;
 }
 
 .flex {
@@ -130,6 +175,10 @@ a {
     min-width: 160px;
 }
 
+.mw-200 {
+    min-width: 200px;
+}
+
 .mw-225 {
     min-width: 225px;
 }
@@ -142,20 +191,28 @@ a {
     margin-right: 8px;
 }
 
-.mgr-12{
+.mgr-12 {
     margin-right: 12px;
+}
+
+.h-64{
+    height: 64px;
+}
+
+.h-70{
+    height: 70px;
 }
 
 .el--center {
     align-items: center;
 }
 
-.float-right{
-    float:right;
+.float-right {
+    float: right;
 }
 
-.float-left{
-    float:left;
+.float-left {
+    float: left;
 }
 
 .w-1\/4 {
@@ -178,7 +235,7 @@ a {
     flex: 1;
 }
 
-.flex-m{
+.flex-m {
     display: flex;
     align-items: center;
 }
@@ -187,36 +244,52 @@ a {
     margin-top: 0;
 }
 
-.mgb-0{
+.mgb-0 {
     margin-bottom: 0;
 }
 
-.mg-0{
+.mg-0 {
     margin: 0;
 }
 
-.mgr-4{
+.mgr-4 {
     margin-right: 4px;
 }
 
-.mgl-12{
+.mgb-4{
+    margin-bottom: 4px;
+}
+
+.mgl-12 {
     margin-left: 12px;
 }
 
-.mgl-auto{
+.mgl-auto {
     margin-left: auto;
 }
 
-.mgr-16{
+.mgr-16 {
     margin-right: 16px;
 }
 
-.mgr-10{
+.mgr-10 {
     margin-right: 10px;
 }
 
-.pad-right-0{
+.pad-right-0 {
     padding-right: 0;
+}
+
+.pad-left-8 {
+    padding-left: 8px;
+}
+
+.pad-right-8 {
+    padding-right: 8px;
+}
+
+.pad-0-8 {
+    padding: 0 8px;
 }
 
 .display-none {
@@ -235,6 +308,7 @@ a {
     width: 6px;
     height: 6px;
 }
+
 .scroller.m::-webkit-scrollbar {
     width: 10px;
     height: 10px;
@@ -256,49 +330,85 @@ a {
     background-color: #b8bcc3;
 }
 
-.fsn{
+.fsn {
     font-style: normal;
 }
 
-.fw-500{
+.fw-500 {
     font-weight: 500;
 }
 
-.fw-600{
+.fw-600 {
     font-weight: 600;
 }
 
-.w-full{
+.w-full {
     width: 100%;
 }
 
-.h-full{
+.h-full {
     height: 100%;
 }
 
-.pad-left-40{
+.pad-left-40 {
     padding-left: 40px;
 }
 
-.pad-left-12{
+.pad-left-12 {
     padding-left: 12px;
 }
 
-.color-red-400{
+.color-red-400 {
     color: var(--red-400);
 }
 
-.flex-c-m{
+.flex-c-m {
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-
-.bg-white{
+.bg-white {
     background-color: white;
 }
 
-::placeholder{
+.cur-point{
+    cursor: pointer;
+}
+
+.scale-0\.5{
+    transform: scale(0.5);
+}
+
+::placeholder {
     color: var(--text-placeholder-color);
+}
+
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar {
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cdd3d6;
+    width: 6px;
+    height: 6px;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #9ea5a6 !important;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #fff;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
 }

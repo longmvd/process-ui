@@ -5,6 +5,7 @@
     padding: 0 16px;
     border: unset;
     cursor: pointer;
+    font-weight: 500;
 }
 
 .btn--pri{
@@ -59,11 +60,12 @@
 .btn--extra{
     color: #1F1F1F;
     background-color: #FFFFFF;
-    border:1px solid var(--dark-border-color);
+    border:1px solid var(--light-border-color);
 }
 
-.btn--disabled{
+.btn.disabled{
     opacity: 56%;
+    cursor: not-allowed;
 }
 
 .btn--pri:hover{
@@ -71,13 +73,18 @@
 }
 
 .btn--extra:hover{
-    background-color: #EEF8EC;
+    background-color: #dbf4ff;
+    color: #0c9cdd;
 }
 
 .have-outline:focus{
     outline: 3px solid var(--border-color);
 }
 
-.paging-btn:hover{
+.change-color-btn:hover{
     background-color: #eff1f6!important;
 }
+.change-color-btn-dark:hover{
+    background-color: #dadce3!important;
+}
+

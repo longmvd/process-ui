@@ -24,7 +24,7 @@
 }
 
 .input:hover{
-    background-color: var(--hover-white-color);
+    border-color: var(--primary-color);
 }
 
 .input-20{

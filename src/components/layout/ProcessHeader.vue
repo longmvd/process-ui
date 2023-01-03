@@ -23,7 +23,7 @@
           <base-button
             buttonClass="btn--pri flex-m fw-500"
             :components="[
-              { class: 'icon-20 svg-icon-process icon-run-process' },
+              { class: 'icon-20 svg-icon-process mgr-4 icon-run-process' },
               { content: Title.RUN_PROCESS },
             ]"
           />

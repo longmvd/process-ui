@@ -1,0 +1,132 @@
+
+.dx-widget input, .dx-widget textarea {
+    font-family: Roboto,helvetica,verdana,sans-serif;
+    line-height: 1.35715;
+}
+
+.dx-selectbox-popup-wrapper .dx-popup-content {
+    padding: 8px;
+}
+
+.dx-dropdownlist-popup-wrapper .dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item-content {
+    padding: 8px;
+}
+
+.dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item.dx-state-hover,
+.dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item.dx-state-active,
+.dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item.dx-list-item-selected,
+.dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item.dx-list-item-selected.dx-state-hover:not(.dx-state-focused),
+.dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item.dx-state-focused,
+.dx-list:not(.dx-list-select-decorator-enabled) .dx-list-item.dx-state-focused.dx-list-item-selected
+{
+    background-color: var(--sidebar-item-background);
+    color: var(--primary-color);
+    font-weight: 500;
+    border-radius: var(--border-radius);
+}
+
+.dx-dropdowneditor.dx-dropdowneditor-button-visible.dx-dropdowneditor-field-clickable.dx-editor-outlined.dx-selectbox.dx-show-invalid-badge.dx-state-focused.dx-textbox.dx-texteditor.dx-widget{
+    border-color: var(--primary-color)
+}
+
+
+.dx-show-invalid-badge.dx-selectbox.dx-textbox.dx-texteditor.dx-dropdowneditor-button-visible.dx-editor-outlined.dx-widget.role-select.dx-dropdowneditor.dx-dropdowneditor-field-clickable.dx-dropdowneditor-active {
+    border-color: var(--primary-color);
+}
+
+.dx-texteditor.dx-state-active.dx-editor-filled, .dx-texteditor.dx-state-active.dx-editor-outlined, .dx-texteditor.dx-state-active.dx-editor-underlined, .dx-texteditor.dx-state-focused.dx-editor-filled, .dx-texteditor.dx-state-focused.dx-editor-outlined, .dx-texteditor.dx-state-focused.dx-editor-underlined {
+    border-color: var(--primary-color);
+}
+
+.dx-texteditor.dx-state-hover {
+    border-color: var(--primary-color);
+}
+
+.dx-tag-content {
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    background-color: #e8eaef;
+    padding-left: 8px;
+    padding-right: 4px;
+    margin: 4px 0 0 4px;
+    border: none;
+    height: 28px;
+    width: 100%;
+
+}
+
+.dx-tag{
+    margin-right: 4px;
+}
+
+.dx-tag-remove-button{
+    position: relative;
+    background-color: #686c7b!important;
+    width: 22px;
+    height: 23px;
+    -webkit-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -moz-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -ms-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -o-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -webkit-mask-position: -216px 0;
+    -moz-mask-position: -216px 0;
+    -ms-mask-position: -216px 0;
+    -o-mask-position: -216px 0;
+    mask-position: -216px 0;
+    -webkit-mask-repeat: no-repeat;
+    -moz-mask-repeat: no-repeat;
+    -ms-mask-repeat: no-repeat;
+    -o-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    transform: scale(.5);
+
+}
+
+.dx-tag-remove-button::before, .dx-tag-remove-button::after {
+    width: 0;
+    height: 0;
+}
+
+.dx-dropdowneditor-icon::before {
+    width: 0;
+    height: 0;
+    content: "";
+}
+
+.dx-dropdowneditor-button {
+    position: relative;
+    display: flex;
+    align-items: center;
+    float: right;
+    height: 100%;
+    cursor: pointer;
+    width: 34px;
+    min-width: 34px;
+    padding: 1px;
+    border-radius: 4px;
+}
+
+.dx-dropdowneditor-icon {
+    width: 24px;
+    height: 24px;
+    -webkit-mask-position: -144px -24px;
+    -moz-mask-position: -144px -24px;
+    -ms-mask-position: -144px -24px;
+    -o-mask-position: -144px -24px;
+    mask-position: -144px -24px;
+    margin-right: 0;
+    -webkit-mask-image: url(../../assets/img/IconControl.9280241f.svg)!important;
+    -moz-mask-image: url(../../assets/img/IconControl.9280241f.svg)!important;
+    -ms-mask-image: url(../../assets/img/IconControl.9280241f.svg)!important;
+    -o-mask-image: url(../../assets/img/IconControl.9280241f.svg)!important;
+    mask-image: url(../../assets/img/IconControl.9280241f.svg)!important;
+    -webkit-mask-repeat: no-repeat;
+    -moz-mask-repeat: no-repeat;
+    -ms-mask-repeat: no-repeat;
+    -o-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    background-color: #666!important;
+}

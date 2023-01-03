@@ -1,0 +1,35 @@
+
+.popup__header {
+    padding: 24px;
+    padding-bottom: 0;
+    padding-top: 18px;
+    min-height: 53px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .header-title {
+    letter-spacing: 0.576px;
+    font-size: 24px;
+    color: rgb(33, 33, 33);
+    font-weight: 500;
+  }
+  
+  .popup__content {
+    padding: 24px;
+  }
+  
+  .popup__footer {
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: flex-end;
+    background: #f2f2f2;
+    padding: 12px 24px;
+    border-radius: 0 0 8px 8px;
+    height: 60px;
+  }
+  
+  .popup-btn-group {
+    display: flex;
+  }
