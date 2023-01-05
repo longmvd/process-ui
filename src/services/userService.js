@@ -8,5 +8,10 @@ import * as request from '@/utils/request'
  */
 export const getAllUser = async () => {
     const res = await request.get('users/')
-    return res
+    return res.data
+}
+
+export const getUserByFilter = async (pagingRequest) => {
+    const res = await request.post('users/filter', {...pagingRequest})
+    return res.data
 }

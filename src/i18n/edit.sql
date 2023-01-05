@@ -104,16 +104,16 @@ CREATE TABLE userrole (
 )
 
 
+
 CREATE DEFINER = 'root'@'localhost'
-PROCEDURE `misa.web10.nsdh.mdlong`.Proc_user_SelectFilter(
-    IN `@JobPositionID` CHAR(36),
-    IN `@DepartmentID` CHAR(36),
-    IN `@RoleIDs` CHAR(36),
-    IN `@Keyword` VARCHAR(255),
-    IN `@SortColumn` VARCHAR(255),
-    IN `@SortOrder` VARCHAR(4),
-    IN `@Offset` INT,
-    IN `@Limit` INT
+PROCEDURE `misa.web10.nsdh.mdlong`.Proc_user_SelectFilter(IN `@JobPositionID` text,
+IN `@DepartmentID` char(36),
+IN `@RoleID` char(36),
+IN `@Keyword` varchar(100),
+IN `@SortColumn` varchar(50),
+IN `@SortOrder` varchar(4),
+IN `@Offset` int,
+IN `@Limit` int
 )
   COMMENT '
   -- Author:        MDLONG
@@ -122,21 +122,21 @@ PROCEDURE `misa.web10.nsdh.mdlong`.Proc_user_SelectFilter(
   -- Modified by:
   -- Code chạy thử: CALL `misa.web09.ctm.mdlong`.Proc_employee_SelectFilter('');'
 BEGIN
-    SET @sql = CONCAT('SELECT u.UserID,
+  SET @sql = CONCAT(
+  'SELECT u.UserID,
     u.UserCode,
     u.UserName,
     d.DepartmentID,
     d.DepartmentName,
     j.JobPositionID,
     j.JobPositionName,
+    Group_Concat(r.roleName SEPARATOR ''; '') as RoleNames,
     u.Email,
     u.Status,
     u.CreatedDate,
     u.CreatedBy,
     u.ModifiedDate,
-    u.ModifiedBy,
-    r.RoleID,
-    r.RoleName
+    u.ModifiedBy
         FROM user u
     LEFT JOIN department d
       ON u.DepartmentID = d.DepartmentID
@@ -145,17 +145,35 @@ BEGIN
     LEFT JOIN userrole ur
       ON u.UserID = ur.UserID
     LEFT JOIN role r
-      ON ur.RoleID = r.RoleID
+      ON ur.RoleID = r.RoleID WHERE 1=1'
+  );
+  IF `@JobPositionID` IS NOT NULL THEN
+    SET @sql = CONCAT(@sql, ' AND fIND_IN_SET(u.JobPositionID,''', `@JobPositionID`,''') > 0');
+  END IF;
+  IF `@DepartmentID` IS NOT NULL THEN
+    SET @sql = CONCAT(@sql, ' AND u.DepartmentID = ''', `@DepartmentID`, '''');
+  END IF;
+  IF `@RoleID` IS NOT NULL THEN
+    SET @sql = CONCAT(@sql, ' AND r.RoleID = (''', `@RoleID`, ''')');
+  END IF;
+  IF `@Keyword` IS NOT NULL THEN
+    SET @sql = CONCAT(@sql, ' AND (u.UserName LIKE ''%', `@Keyword`, '%'' OR u.UserCode LIKE ''%', `@Keyword`, '%'' OR u.Email LIKE ''%', `@Keyword`, '%'')');
+  END IF;
+  set @sql = CONCAT(@sql, ' GROUP BY u.UserID ');
 
-        WHERE (', `@JobPositionID`, ' IS NULL OR u.JobPositionID = ''', `@JobPositionID`, ''')
-            AND (', `@DepartmentID`, ' IS NULL OR u.DepartmentID = ''', `@DepartmentID`, ''')
-            AND (', `@RoleIDs`, ' IS NULL OR r.RoleID = ''', `@RoleIDs`, ''')
-            AND (', `@Keyword`, ' IS NULL OR ', concat(u.userCode, ' ', u.UserName, ' ', u.Email),  ' LIKE ''%', `@Keyword`, '%'')
-        ORDER BY ', `@SortColumn`, ' ', `@SortOrder`, '
-        LIMIT ', `@Offset`, ', ', `@Limit`, ';');
-    PREPARE stmt FROM @sql;
-    EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
+  SET @count = CONCAT('SELECT COUNT(*) AS TotalRows FROM (', @sql, ') t');
+  PREPARE stmt FROM @count;
+  EXECUTE stmt;
+  
+  DEALLOCATE PREPARE stmt;
+
+  SET @sql = CONCAT(@sql, ' ORDER BY ', `@SortColumn`, ' ', `@SortOrder`, ' LIMIT ', `@Offset`, ', ', `@Limit`);
+
+  PREPARE stmt FROM @sql;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
+
+  
 END
 
 CREATE PROCEDURE GetUsersAndRoles(

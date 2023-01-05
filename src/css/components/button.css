@@ -72,6 +72,10 @@
     /* background: #73C663; */
 }
 
+.btn--pri.red{
+    background-color: var(--error-color);
+}
+
 .btn--extra:hover{
     background-color: #dbf4ff;
     color: #0c9cdd;

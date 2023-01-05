@@ -18,13 +18,20 @@
       <DxTagBox
         :width="width"
         :value="value"
+        :height="height"
+        :showScrollbar="showScrollbar"
+        :show-multi-tag-only="showMultiTagOnly"
         :data-source="dataSource"
         :value-expr="valueExpr"
         :display-expr="displayExpr"
+        :no-data-text="noDataText"
         :placeholder="placeholder"
         :selection-mode="selectionMode"
+        :maxDisplayedTags="maxDisplayedTags"
+        :maxSearchResults="maxSearchResults"
         @focusOut="validate"
         @value-changed="valueChanged"
+        :multiline="true"
       />
     </div>
     <span v-if="!isValid" class="err-message">{{ errorMessage }}</span>
@@ -50,10 +57,16 @@ export default {
     placeholder: String,
     selectionMode: String,
     inputWrapperClass: String,
+    noDataText: String,
     width: String,
+    maxDisplayedTags: Number,
+    maxSearchResults: Number,
     id: String,
     label: String,
     rules: Array,
+    height: Number,
+    showMultiTagOnly: Boolean,
+    showScrollbar:Boolean,
     value:[String, Object, Array]
   },
   components: {
@@ -127,4 +140,6 @@ export default {
 .el-wrapper.error .dx-dropdowneditor {
   border-color: var(--error-color) !important;
 }
+
+
 </style>

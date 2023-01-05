@@ -62,7 +62,7 @@ export default {
       Title,
       NavbarItem,
       isActive: false,
-      selectedNavItem: 0,
+      selectedNavItem: null,
     };
   },
   computed:{

@@ -40,6 +40,7 @@
     --icon-default-color: #686c7b;
     --icon-light-color: #9fa4b4;
     --border-radius: 4px;
+    --border-radius-6: 6px;
     --sidebar-width: 200px;
     --sidebar--bgcolor: #041434;
     --sidebar-color: #869AB8;
@@ -47,6 +48,10 @@
     --white-background: #fff;
     --table-tool-height: 60px;
     --remain-height: 200px;
+    --blue-color:  #13b2d8;
+    --green-color: #66d181;
+    --orange-color: #f39619;
+    --unavailable-color: #616767;
 
 }
 
@@ -57,6 +62,9 @@
     font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
+body{
+    /* min-width: 1366px; */
+}
 
 body,
 button,
@@ -378,6 +386,42 @@ span.required {
 
 .scale-0\.5{
     transform: scale(0.5);
+}
+
+.dot{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.bg-blue{
+    background-color: var(--blue-color);
+}
+
+.bg-green{
+    background-color: var(--green-color);
+}
+
+.bg-orange{
+    background-color: var(--orange-color);
+}
+
+.bg-unavailable{
+    background-color: var(--unavailable-color);
+}
+
+.color-blue{
+    color: var(--blue-color);
+}
+.color-green{
+    color: var(--green-color);
+}
+.color-orange{
+    color: var(--orange-color);
+}
+.color-unavailable{
+    color: var(--unavailable-color);
 }
 
 ::placeholder {

@@ -4,12 +4,14 @@
       :data-source="dataSource"
       :allow-column-resizing="true"
       :show-column-lines="false"
+      :no-data-text="Title.NO_DATA"
       :show-row-lines="true"
       class="custom-height"
       @cell-prepared="onCellPrepared"
       @row-prepared="onRowPrepared"
       :hover-state-enabled="true"
       :column-auto-width="true"
+      
     >
       <DxColumn
         v-for="(column, index) in columns"
@@ -19,12 +21,14 @@
         :caption="column.caption"
         :cell-template="column.cellTemplate"
         :height="48"
+        :data-type="column.dataType"
         v-model:visible="column.visible"
+        
       />
       <DxColumn class="row-action" :width="96" cell-template="button-group">
       </DxColumn>
 
-      <DxScrolling column-rendering-mode="virtual" mode="infinite" />
+      <!-- <DxScrolling column-rendering-mode="virtual" mode="infinite" /> -->
 
       <DxPaging :page-size="10" :enabled="false" />
 
@@ -44,14 +48,24 @@
       </template>
       <template #avatar-cell="{ data }">
         <div class="flex-m">
-          <BaseAvatar class="mgr-12" :username="data.displayValue" />
+          <base-avatar class="mgr-12" :username="data.displayValue"></base-avatar>
           <div :title="data.displayValue">{{ data.displayValue }}</div>
         </div>
       </template>
+
       <template #title-tooltip="{ data }">
         <div class="flex-m">
           <div :title="data.displayValue" class="wrap-text">
             {{ data.displayValue }}
+          </div>
+        </div>
+      </template>
+
+      <template #status-cell="{ data }">
+        <div class="flex-m">
+          <div :title="getStatus(data.displayValue).text" class="wrap-text flex-c-m">
+            <span class="dot" :class="getStatus(data.displayValue).iconClass"></span>
+            <span :class="getStatus(data.displayValue).class">{{ getStatus(data.displayValue).text }}</span>
           </div>
         </div>
       </template>
@@ -72,6 +86,8 @@ import {
 } from "devextreme-vue/data-grid";
 import BaseAvatar from "../avatar/BaseAvatar.vue";
 import BaseButton from "../button/BaseButton.vue";
+import {getStatus} from "@/utils"
+import { Title } from "@/i18n";
 export default {
   name: "BaseTable",
   props: {
@@ -93,6 +109,7 @@ export default {
   emits:["deleteRow", "editRow"],
   data() {
     return {
+      Title,
       isEmailVisible: false,
       
     };
@@ -127,6 +144,14 @@ export default {
     deleteRow(data){
       this.$emit("deleteRow", data.data)
       // console.log(data.data)
+    },
+
+    /**
+     * Lấy tên trạng thái
+     * @param {*} status 
+     */
+    getStatus(status){
+      return getStatus(status)
     },
 
     log(data) {
@@ -213,5 +238,19 @@ tr.custom-row.dx-data-row.dx-row.dx-row-lines.dx-state-hover {
   height: 100%;
   width: 100%;
   visibility: hidden;
+}
+
+.dx-datagrid-nodata {
+    color: #999;
+    font-size: 15px;
+}
+
+span.dx-datagrid-nodata {
+    width: 155px!important;
+    background: url(@/assets/img/EmptyRC1.3c8bf4c8.svg) -692px 16px no-repeat!important;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    height: 200px;
 }
 </style>

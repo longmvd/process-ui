@@ -20,7 +20,7 @@
                   v-for="column in UserColumnAdd"
                   :key="column.id"
                 >
-                  {{ column.caption }}
+                  {{ column.caption }}<span style="color: var(--error-color)">*</span>
                 </th>
                 <th></th>
               </tr>
@@ -229,7 +229,6 @@ export default {
       this.roles = await request.getAllRole();
       this.jobPositions = await request.getAllJobPosition();
       this.departments = await request.getAllDepartment();
-      console.log(this.roles, this.jobPositions, this.departments);
     },
 
     async saveData() {
