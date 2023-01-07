@@ -93,6 +93,7 @@
 #navbar-three-dot {
     padding-right: 20px;
     background-color: var(--white-color);
+    margin-left: -10px;
 }
 
 .header-notify {

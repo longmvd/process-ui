@@ -47,7 +47,7 @@
     --text-placeholder-color: #9fa4b4;
     --white-background: #fff;
     --table-tool-height: 60px;
-    --remain-height: 200px;
+    --remain-height: 210px;
     --blue-color:  #13b2d8;
     --green-color: #66d181;
     --orange-color: #f39619;
@@ -104,7 +104,7 @@ a {
     left: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 2;
+    z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -260,6 +260,10 @@ span.required {
     margin: 0;
 }
 
+.mgt-4{
+    margin-top: 4px;
+}
+
 .mgr-4 {
     margin-right: 4px;
 }
@@ -350,6 +354,10 @@ span.required {
     font-weight: 600;
 }
 
+.w-60{
+    width: 60px;
+}
+
 .w-full {
     width: 100%;
 }
@@ -374,6 +382,10 @@ span.required {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.row-reverse{
+    flex-direction: row-reverse;
 }
 
 .bg-white {

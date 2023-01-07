@@ -16,11 +16,17 @@
             <thead>
               <tr>
                 <th
-                  class="custom-cell"
+                  class="custom-cell table-header"
                   v-for="column in UserColumnAdd"
                   :key="column.id"
+                  :width="column.width"
                 >
-                  {{ column.caption }}<span style="color: var(--error-color)">*</span>
+                  {{ column.caption
+                  }}<span
+                    v-if="column.required"
+                    style="color: var(--error-color)"
+                    >&nbsp;*</span
+                  >
                 </th>
                 <th></th>
               </tr>
@@ -29,9 +35,9 @@
               <tr
                 v-for="(user, index) in users"
                 :key="user.id"
-                class="dx-data-row"
+                class="user-row"
               >
-                <td class="h-70">{{ index + 1 }}</td>
+                <td class="h-70 text-right">{{ index + 1 }}</td>
                 <td v-for="field in Object.keys(user)" :key="field">
                   <BaseSelectBox
                     :data-source="departments"
@@ -61,7 +67,7 @@
                   <BaseTagBox
                     v-else-if="field === 'RoleIDs'"
                     :data-source="roles"
-                    width="200"
+                    width="250"
                     value-expr="RoleID"
                     :value="user[field]"
                     display-expr="RoleName"
@@ -87,6 +93,7 @@
                     v-model="user[field]"
                     class="mw-200"
                     :isRequired="true"
+                    :inputClass="field"
                     :rules="[
                       { required: Message.REQUIRED },
                       { email: Message.INVALID_EMAIL },
@@ -94,20 +101,28 @@
                     ref="userField"
                   ></base-input>
                   <base-input
-                    v-else
+                    v-else-if="field === 'UserCode'"
                     v-model="user[field]"
                     class="mw-120"
                     :isRequired="true"
                     :rules="[{ required: Message.REQUIRED }]"
-                    ref="userField"
                     :inputClass="field"
+                    ref="userField"
+                  ></base-input>
+                  <base-input
+                    v-else
+                    v-model="user[field]"
+                    class="mw-200"
+                    :isRequired="true"
+                    :rules="[{ required: Message.REQUIRED }]"
+                    ref="userField"
                   ></base-input>
                 </td>
                 <td class="row-action bg-none">
-                  <div class="flex-m button-group row-action">
+                  <div class="flex-c-m button-group row-action">
                     <base-button
                       @click="deleteRow(index)"
-                      v-if="index != 0"
+                      v-if="users.length > 1"
                       buttonClass="btn--round bg-none flex-c-m change-color-btn-dark"
                       :components="[
                         { class: 'icon-24 svg-icon-process icon-delete' },
@@ -119,9 +134,13 @@
             </tbody>
           </table>
         </div>
-        <div @click="addNewRow" class="flex-m add-row-wrap">
-          <div class="icon-24 svg-icon-process icon-plus-blue scale-0.5"></div>
-          <div class="mt2">{{ Title.ADD }}</div>
+        <div class="flex-m add-row-wrap">
+          <div @click="addNewRow" class="flex-m cur-point">
+            <div
+              class="icon-24 svg-icon-process icon-plus-blue scale-0.5"
+            ></div>
+            <div class="mt2">{{ Title.ADD }}</div>
+          </div>
         </div>
       </main>
       <footer class="popup__footer">
@@ -179,6 +198,7 @@ export default {
     return {
       isShow: false,
       isValid: true,
+      focusElement: null,
       Title,
       Message,
       UserColumnAdd,
@@ -199,12 +219,14 @@ export default {
       roles: [],
     };
   },
+  emits:['addUsers'],
   methods: {
     /**
      * Ẩn hiện popup
      * Author: MDLONG(27/12/2022)
      */
     togglePopup() {
+      this.initForm()
       this.isShow = !this.isShow;
     },
 
@@ -233,78 +255,139 @@ export default {
 
     async saveData() {
       this.validate();
-      console.log(this.users)
+      if(this.isValid){
+        // let validateResponse = await request.
+        let response = await request.addUser(this.users)
+        this.$emit('addUsers', response)
+      }
     },
 
+    /**
+     * Validate form
+     * MDLONG(27/12/2022)
+     */
     validate() {
-      try{
+      try {
         this.isValid = true;
-        let focusFirst = true
-        let userCodeFields = []
+        let focusFirst = true;
+        let distinctField = [];
         for (let field of this.$refs.userField) {
           field.validate();
-          let input = field.$el.querySelector("input")
-          //lấy ra trường usercode
-          if(field.$el.querySelector('.UserCode')){
-            userCodeFields.push(field)
+          let input = field.$el.querySelector("input");
+          if(input.type =='hidden'){
+            input = field.$el.querySelectorAll("input")[1];
+          }
+          //lấy ra trường usercode và email
+          if (
+            field.$el.querySelector(".UserCode") ||
+            field.$el.querySelector(".Email")
+          ) {
+            distinctField.push(field);
           }
           if (!field.isValid) {
             this.isValid = false;
-            if(focusFirst){
+            if (focusFirst) {
+              // console.log(input.parentNode.focus())
               input.focus();
-              focusFirst = false
+              focusFirst = false;
             }
-            // this.field.$el.focus()
-            // break;
           }
         }
-        if(true){
-          let values = []
-          for(let userCodeField of userCodeFields){
-            let input = userCodeField.$el.querySelector('.UserCode')
-            values.push({element: input, value: input.value, parent: userCodeField})
+        //nếu không có trường nào để trống mới thực hiện validate trùng
+        if (this.isValid) {
+          let userCodes = [];
+          let emails = [];
+          //lấy ra thẻ input của field
+          for (let field of distinctField) {
+            let userCodeInput = field.$el.querySelector(".UserCode");
+            let emailInput = field.$el.querySelector(".Email");
+
+            if (userCodeInput) {
+              userCodes.push({
+                element: userCodeInput,
+                value: userCodeInput.value,
+                parent: field,
+              });
+            }
+            if (emailInput) {
+              emails.push({
+                element: emailInput,
+                value: emailInput.value,
+                parent: field,
+              });
+            }
           }
-          this.checkDuplicate(values)
+
+          //validate và lấy ra trường lỗi cần focus
+          let validCode = this.checkDuplicate(
+            userCodes,
+            Message.DUPLICATE_USER_CODE
+          );
+          let validEmail = this.checkDuplicate(emails, Message.DUPLICATE_EMAIL);
+          this.isValid = validCode && validEmail
         }
-      }catch(error){
-        console.log(error)
+      } catch (error) {
+        console.log(error);
       }
     },
 
-    checkDuplicate(elements){
-      const map = {}
+    /**
+     * Kiểm tra giá trị trùng
+     * Author: MDLONG(28/12/2022)
+     * @param {*} elements
+     * @param {*} message
+     */
+    checkDuplicate(elements, message) {
+      const map = {};
       // đếm giá trị trùng
-      for(let element of elements){
-        if(!map[element.value]){
-          map[element.value] = 1
-        }else{
-          map[element.value] ++
+      for (let element of elements) {
+        if (!map[element.value]) {
+          map[element.value] = 1;
+        } else {
+          map[element.value]++;
         }
       }
-      for(let element of elements){
-        if(map[element.value] > 1){
-          element.parent.errorMessage="Mã trùng"
-          element.parent.isValid = false
-          element.element.focus()
+      let isValid = true;
+      let focusElement = null;
 
+      //biến lưu trường muốn focus
+      for (let element of elements) {
+        if (map[element.value] > 1) {
+          element.parent.errorMessage = message;
+          element.parent.isValid = false;
+          if (!this.focusElement) {
+            focusElement = element.element;
+          }
+          isValid = false;
         }
       }
-      
-      console.log(map)
+      focusElement?.focus();
+      return isValid;
     },
 
     getSelected(e, object, field) {
       try {
         object[field] = e.value;
-        console.log(this.users);
       } catch (error) {
         console.log(error);
       }
     },
 
     deleteRow(index) {
-      this.users = this.users.filter((value, i) => index !=i)
+      this.users = this.users.filter((value, i) => index != i);
       // this.users.splice(index, 1);
+    },
+
+    initForm(){
+      this.users = [{
+          UserCode: "NV02342",
+          UserName: "Mai Đại Long",
+          DepartmentID: "",
+          JobPositionID: "",
+          Email: "maidailong@gmail.com",
+          RoleIDs: [],
+          Status: 1,
+        },]
     },
 
     log(x) {
@@ -328,6 +411,17 @@ export default {
   border-radius: 6px;
   display: flex;
   flex-direction: column;
+}
+
+.table-header:not(:first-child):not(:last-child)::before {
+  content: "";
+  position: absolute;
+  top: 30%;
+  left: 0;
+  background-color: var(--border-color);
+  width: 1px;
+  height: 20px;
+  z-index: 1;
 }
 
 table {
@@ -364,7 +458,7 @@ table td {
 }
 table th:last-child,
 table th:first-child {
-  background-color: var(--table-h-bgcolor);
+  /* background-color: var(--table-h-bgcolor); */
   z-index: 1;
 }
 
@@ -385,6 +479,7 @@ table th:first-child {
 
 table th {
   /* border-right: 1px solid var(--border-color); */
+  background-color: var(--primary-background-color);
   z-index: 2;
 }
 
@@ -404,7 +499,6 @@ tr:last-child td {
 table thead th {
   position: sticky;
   top: 0px;
-  background-color: #f5f5f5;
 }
 
 table tbody tr {
@@ -427,6 +521,7 @@ table tbody tr {
   max-width: 100%;
   overflow: auto;
   background-color: white;
+  border-radius: var(--border-radius);
 }
 
 .paging {
@@ -511,8 +606,15 @@ table tbody tr {
 .add-row-wrap {
   font-weight: 500;
   color: var(--primary-color);
-  cursor: pointer;
   align-items: center;
   margin-top: 12px;
+}
+.user-row:hover .button-group {
+  visibility: visible;
+}
+
+.user-row .button-group {
+  min-width: 50px !important;
+  width: 50px !important;
 }
 </style>

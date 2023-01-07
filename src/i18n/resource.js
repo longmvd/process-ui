@@ -10,8 +10,9 @@ const Title = {
   GROUP: "Nhóm người dùng",
   CONNECT: "Kết nối",
   NO_DATA: "Không có dữ liệu",
+  DELETE_QUESTION: "Bạn có chắc chắn muốn xóa <b>{0}</b> khỏi ứng dụng AMIS Quy trình không?",
   SEARCH: "Tìm kiếm",
-  SEARCH_FILTER: "Tìm theo tên, email, mã",
+  SEARCH_FILTER: "Tìm kiếm theo tên, email, mã",
   CUSTOM_COLUMN: "Tùy chỉnh cột",
   PAGE_TOTAL: "Tổng: ",
   FROM_TO: "Từ <0> đến <0> bản ghi",
@@ -23,6 +24,9 @@ const Title = {
   CANCEL: "Hủy",
   SAVE: "Lưu",
   DELETE: "Xóa",
+  CLOSE: "Đóng",
+  DUPLICATED_USER_CODE: "Mã trùng: ",
+  DUPLICATED_EMAIL: "Email trùng: ",
 };
 
 const NavbarItem = [
@@ -87,7 +91,7 @@ const UserColumn = [
   {
     id: 2,
     width: 200,
-    minWidth: 100,
+    minWidth: 200,
     field: "UserName",
     caption: "Họ và tên",
     text: "Họ và tên",
@@ -150,7 +154,7 @@ const UserColumnAdd = [
     cellTemplate: "row-order",
     allowEditing: false,
     visible: false,
-
+    required: false,
   },
   {
     id: 1,
@@ -159,6 +163,7 @@ const UserColumnAdd = [
     caption: "Mã nhân viên",
     cellTemplate: null,
     visible: true,
+    required: true,
   },
   {
     id: 2,
@@ -166,6 +171,8 @@ const UserColumnAdd = [
     field: "UserName",
     caption: "Họ và tên",
     cellTemplate: undefined,
+    visible: true,
+    required: true,
   },
   {
     id: 3,
@@ -174,6 +181,8 @@ const UserColumnAdd = [
     caption: "Phòng ban",
     isSelection: true,
     cellTemplate: null,
+    visible: true,
+    required: true,
   },
   {
     id: 4,
@@ -181,6 +190,8 @@ const UserColumnAdd = [
     field: "JobPositionName",
     caption: "Vị trí công việc",
     cellTemplate: null,
+    visible: true,
+    required: true,
   },
   {
     id: 5,
@@ -188,6 +199,8 @@ const UserColumnAdd = [
     field: "Email",
     caption: "Email",
     cellTemplate: null,
+    visible: true,
+
   },
   {
     id: 6,
@@ -208,7 +221,8 @@ const UserColumnAdd = [
     displayExpr: 'RoleName',
     valueExpr: 'RoleID',
     cellTemplate: null,
-
+    visible: true,
+    required: true,
   },
 
   {
@@ -218,7 +232,8 @@ const UserColumnAdd = [
     caption: "Trạng thái",
     isSelection: true,
     cellTemplate: null,
-
+    visible: true,
+    required: true,
   },
 
 ]
@@ -226,7 +241,16 @@ const UserColumnAdd = [
 const Message = {
   REQUIRED: "Không để trống.",
   INVALID_EMAIL: "Email không đúng định dạng.",
-  DUPLICATE_USER_CODE: "Mã trùng."
+  DUPLICATE_USER_CODE: "Mã trùng.",
+  DUPLICATE_EMAIL: "Email trùng.",
+  ADD_SUCCESS: "Thêm mới {0} người dùng thành công.",
+  ADD_FAILED: "Thêm mới thất bại.",
+  DELETE_SUCCESS: "Xóa thành công.",
+  DELETE_FAILED: "Xóa thất bại.",
+  EDIT_SUCCESS: "Sửa thành công.",
+  EDIT_FAILED: "Sửa thất bại.",
+  DETAILS: "Chi tiết: ",
+  SERVER_ERROR: "Có lỗi xảy ra, vui lòng liên hệ Misa."
 }
 
 const UserStatus = [{ TEXT: "Chưa kích hoạt", VALUE: 1 }, { TEXT: "Chờ xác nhận", VALUE: 2 }, { TEXT: "Đang hoạt động", VALUE: 3 }, { TEXT: "Ngừng kích hoạt", VALUE: 4 }]

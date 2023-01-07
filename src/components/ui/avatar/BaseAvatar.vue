@@ -2,6 +2,7 @@
   <img
     id="avatar"
     alt="Avatar"
+    :class="imageClass"
     :src="generateAvatar('white')"
   />
 </template>
@@ -17,6 +18,7 @@ export default {
     },
     width: String,
     height: String,
+    imageClass: String,
   },
   data(){
     return {

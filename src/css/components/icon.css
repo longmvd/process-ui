@@ -251,6 +251,15 @@
   -o-mask-position: -621px -278px;
   mask-position: -621px -278px;
   background-color: var(--icon-default-color)
+}
+
+.icon-organization-control{
+  -webkit-mask-position: -552px -22px;
+  -moz-mask-position: -552px -22px;
+  -ms-mask-position: -552px -22px;
+  -o-mask-position: -552px -22px;
+  mask-position: -552px -22px;
+  background-color: var(--icon-default-color)
   
 }
 

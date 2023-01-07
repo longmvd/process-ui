@@ -40,7 +40,7 @@ export default {
   name: "BaseSelectBox",
   props: {
     dataSource: {
-      type: Array,
+      type: Array,Object,String
     },
     iconClass: {
       type: String,

@@ -14,7 +14,7 @@
         <div>
           <div class="info-wrap">
             <div class="avatar mgr-8 flex-m">
-              <base-avatar></base-avatar>
+              <base-avatar :username="user.UserName" imageClass="w-60"></base-avatar>
             </div>
             <div class="user-info">
               <div>
@@ -47,7 +47,7 @@
                   type="checkbox"
                   class="c1 cur-point"
                   :value="role.RoleID"
-                  v-model="selectedRoles"
+                  v-model="selectedRoleIDs"
                   :id="role.RoleID"
                 />
                 <span class="role-label">{{ role.RoleName }}</span>
@@ -86,21 +86,23 @@ export default {
     BaseButton,
   },
   props: {
-    user: {
-      type: Object,
-    },
+  },
+  watch(){
+
   },
   computed: {
     disabled() {
-      return this?.selectedRoles?.length === 0 ? true : false;
+      return this?.selectedRoleIDs?.length === 0 ? true : false;
     },
   },
   data() {
     return {
       Title,
       isShow: false,
+      user: {},
       roles: [],
-      selectedRoles: [...this.user?.RoleIDs],
+      saveData: {},
+      selectedRoleIDs: [],
       // "6a9df853-16b5-44d5-97da-0783be03d1d6",
       // "98fc2f3e-0757-48b4-9a6f-9bd17bffadb6",
       // "2a7de239-e9f3-4922-b75f-8de32b7f37cf",
@@ -114,21 +116,21 @@ export default {
     togglePopup() {
       this.isShow = !this.isShow;
     },
+    /**
+     * Hiển thị 
+     * Author: MDLONG(27/12/2022)
+     */
+    show(){
+      this.selectedRoleIDs = [...this.user?.Roles.map(role => role.RoleID)]
+      this.isShow = true;
+    },
+
+    setUser(user){
+      this.user = user
+    },
 
     async loadData() {
       this.roles = await request.getAllRole();
-    },
-
-    async saveData() {
-      try {
-        if (!this.disabled) {
-          let user = { ...this.user };
-          user.RoleIDs = this.selectedRoles;
-          console.log(user);
-        }
-      } catch (error) {
-        console.log(error);
-      }
     },
   },
   created() {

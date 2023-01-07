@@ -1,7 +1,7 @@
 <template>
   <div class="w-full h-full" id="user-page">
     <div class="page-container">
-      <div class="content__header">
+      <div class="content__header" id="content-header">
         <div class="content__header--left">
           <div class="page-title">{{ Title.USER }}</div>
         </div>
@@ -19,13 +19,13 @@
       <div class="content__main">
         <div class="table-filter">
           <base-input
-            wrapperClass="table-search mgr-8"
+            wrapperClass="table-search mgr-12"
             iconClass="svg-icon icon-search"
             :placeholder="Title.SEARCH_FILTER"
             @update:model-value="doSearch"
           />
           <BaseSelectBox
-            wrapperClass="mgr-8 mgl-8"
+            wrapperClass="mgr-12"
             :placeholder="Title.SELECT_ROLE"
             icon-class="svg-icon-process icon-role-setting-user role-icon"
             display-expr="RoleName"
@@ -39,7 +39,7 @@
 
           <BaseTagBox
             width="227"
-            wrapper-class="mgr-8 mgl-8"
+            wrapper-class="mgr-12"
             :data-source="jobPositions"
             :show-scrollbar="true"
             :show-multi-tag-only="false"
@@ -53,7 +53,7 @@
           />
           <BaseSelectBox
             width="227"
-            icon-class="svg-icon-process icon-job-position pos-icon"
+            icon-class="svg-icon-process icon-organization-control pos-icon"
             :noDataText="Title.NO_DATA"
             :data-source="departments"
             :placeholder="Title.SELECT_DEPARTMENT"
@@ -148,10 +148,10 @@
           <base-table
             :columns="UserColumn"
             :dataSource="users"
-            @delete-row="deleteUser"
-            @edit-row="editUser"
+            @delete-row="handleDeleteUser"
+            @edit-row="handleEditUser"
           />
-          <base-loading v-show="isLoading"/>
+          <base-loading v-show="isLoading" />
         </div>
         <div class="paging">
           <div class="paging-navigation">
@@ -165,8 +165,15 @@
                 @onSelect="resizePage"
               ></base-combobox>
               <div class="page-info">
-                Từ <span>{{ paging.PageSize }}</span> đến
-                <span>{{ paging.TotalRecord }}</span> bản ghi
+                Từ
+                <span
+                  ><b>{{ startFrom }}</b></span
+                >
+                đến
+                <span
+                  ><b>{{ endAt }}</b></span
+                >
+                bản ghi
               </div>
             </div>
             <div class="page-next-preview flex-c-m">
@@ -174,17 +181,25 @@
                 @click="prePage"
                 buttonClass="btn--round bg-none change-color-btn flex-c-m"
                 :components="[
-                  { class: paging.PageNumber == 1?
-                    'icon-24 svg-icon icon-chevron-left disabled':
-                    'icon-24 svg-icon icon-chevron-left' },
+                  {
+                    class:
+                      paging.PageNumber == 1
+                        ? 'icon-24 svg-icon icon-chevron-left disabled'
+                        : 'icon-24 svg-icon icon-chevron-left',
+                  },
                 ]"
               />
               <base-button
-              @click="nextPage"
+                @click="nextPage"
                 buttonClass="btn--round bg-none change-color-btn flex-c-m"
-                :components="[{ class: paging.PageNumber == paging.TotalPage?
-                  'icon-24 svg-icon icon-chevron-right disabled':
-                  'icon-24 svg-icon icon-chevron-right'}]"
+                :components="[
+                  {
+                    class:
+                      paging.PageNumber == paging.TotalPage
+                        ? 'icon-24 svg-icon icon-chevron-right disabled'
+                        : 'icon-24 svg-icon icon-chevron-right',
+                  },
+                ]"
               />
             </div>
           </div>
@@ -192,9 +207,20 @@
       </div>
     </div>
   </div>
-  <add-user-popup ref="addUserPopup" />
-  <edit-user-popup ref="editUserPopup" :user="selectedUser" />
+  <add-user-popup ref="addUserPopup" @addUsers="handleAddUsers" />
+  <edit-user-popup ref="editUserPopup" />
   <message-popup ref="messagePopup" />
+  <DxToast
+    ref="toast"
+    v-model:visible="message.visible"
+    width="auto"
+    min-width="200"
+    :height="42"
+    :type="message.type"
+    :message="message.text"
+  >
+    <DxPosition my="top" at="top" of="#content-header" />
+  </DxToast>
 </template>
 
 <script>
@@ -205,9 +231,10 @@ import { DxPopover } from "devextreme-vue/popover";
 import DxList, { DxItemDragging } from "devextreme-vue/list";
 import { DxTagBox } from "devextreme-vue/tag-box";
 import { DxSelectBox } from "devextreme-vue/select-box";
-// import { DxButton } from 'devextreme-vue/button';
-import { Title, UserColumn } from "@/i18n";
-import BaseLoading from '@/components/ui/loading/BaseLoading.vue'
+import { DxToast } from "devextreme-vue/toast";
+import { Message, Title, UserColumn } from "@/i18n";
+import { handleResponse } from "@/utils";
+import BaseLoading from "@/components/ui/loading/BaseLoading.vue";
 import BaseButton from "@/components/ui/button/BaseButton.vue";
 import BaseInput from "@/components/ui/input/BaseInput.vue";
 import BaseTable from "@/components/ui/table/BaseTable.vue";
@@ -215,10 +242,11 @@ import BaseCombobox from "@/components/ui/combobox/BaseCombobox.vue";
 import AddUserPopup from "@/components/ui/popup/AddUserPopup.vue";
 import MsCheckbox from "@/components/ui/input/MsCheckbox.vue";
 import EditUserPopup from "@/components/ui/popup/EditUserPopup.vue";
-import MessagePopup from '@/components/ui/popup/MessagePopup.vue';
+import MessagePopup from "@/components/ui/popup/MessagePopup.vue";
 import BaseSelectBox from "../components/ui/combobox/BaseSelectBox.vue";
 import BaseTagBox from "@/components/ui/combobox/BaseTagBox";
 import * as request from "@/services";
+import { ErrorCode, State, StatusCode } from "@/enums";
 export default {
   name: "UserPage",
   components: {
@@ -234,6 +262,7 @@ export default {
     DxItemDragging,
     DxTagBox,
     DxSelectBox,
+    DxToast,
     BaseCombobox,
     AddUserPopup,
     MsCheckbox,
@@ -244,6 +273,19 @@ export default {
     EditUserPopup,
     MessagePopup,
   },
+  computed: {
+    startFrom() {
+      return this.users?.length == 0
+        ? 0
+        : (this.paging.PageNumber - 1) * this.paging.PageSize + 1;
+    },
+
+    endAt() {
+      return this.users?.length == 0
+        ? 0
+        : this.startFrom + this.paging.PageSize - 1;
+    },
+  },
   data() {
     return {
       Title,
@@ -252,6 +294,14 @@ export default {
       isPageSizeSelectOpened: false,
       isShowAddUserPopup: true,
       isLoading: false,
+
+      message: {
+        visible: false,
+        type: "success",
+        text: "Thành công",
+      },
+
+      handleResponse,
       users: [],
       jobPositions: [],
       roles: [],
@@ -265,11 +315,7 @@ export default {
         JobPositionName: "",
         JobPositionID: "",
         Email: "",
-        RoleIDs: [
-          "6a9df853-16b5-44d5-97da-0783be03d1d6",
-          "98fc2f3e-0757-48b4-9a6f-9bd17bffadb6",
-          "2a7de239-e9f3-4922-b75f-8de32b7f37cf",
-        ],
+        RoleIDs: [],
 
         Status: 1,
       },
@@ -326,42 +372,64 @@ export default {
       this.loadRoles();
     },
 
-    async loadDepartments(){
-      this.departments = await request.getAllDepartment();
-      this.departments.unshift({
-        DepartmentID: "",
-        DepartmentName: Title.SELECT_DEPARTMENT,
-      });
+    async loadDepartments() {
+      try {
+        this.departments = await request.getAllDepartment();
+        this.departments?.unshift({
+          DepartmentID: "",
+          DepartmentName: Title.SELECT_DEPARTMENT,
+        });
+      } catch (error) {
+        console.log(error);
+      }
     },
 
-    async loadRoles(){
-      this.roles = await request.getAllRole();
-      this.roles.unshift({ RoleID: null, RoleName: Title.ALL });
+    async loadRoles(setDefault = true) {
+      try {
+        this.roles = await request.getAllRole();
+        if (setDefault)
+          this.roles?.unshift({ RoleID: null, RoleName: Title.ALL });
+      } catch (error) {
+        console.log(error);
+      }
     },
 
-    async loadUsers(){
-      this.isLoading = true
-      let data = await request.getUserByFilter(this.paging);
-      this.isLoading = false
-      this.users = data.Data;
-      this.paging.TotalRecord = data.TotalRecord;
-      this.paging.TotalPage = data.TotalPage;
+    /**
+     * Load user từ api
+     * Author: MDLONG(02/01/2022)
+     */
+    async loadUsers(option) {
+      try {
+        this.isLoading = true;
+        let data
+        if(option){
+          data = await request.getUserByFilter(option);
+        }else{
+          data = await request.getUserByFilter(this.paging);
+        }
+        this.isLoading = false;
+        this.users = data?.Data;
+        this.paging.TotalRecord = data?.TotalRecord;
+        this.paging.TotalPage = data?.TotalPage;
+      } catch (error) {
+        console.log(error);
+      }
     },
 
-    async loadJobPositions(){
+    async loadJobPositions() {
       this.jobPositions = await request.getAllJobPosition();
     },
 
-    resizePage(selected){
-      this.paging.PageSize = selected.value
-      this.paging.PageNumber = 1
-      this.loadUsers()
+    resizePage(selected) {
+      this.paging.PageSize = selected.value;
+      this.paging.PageNumber = 1;
+      this.loadUsers();
     },
 
-    nextPage(){
+    nextPage() {
       if (this.paging.PageNumber < this.paging.TotalPage) {
-        this.paging.PageNumber += 1
-        this.loadUsers()
+        this.paging.PageNumber += 1;
+        this.loadUsers();
       }
     },
 
@@ -369,20 +437,22 @@ export default {
      * trang kế
      * Author: MDLONG(01/01/2022)
      */
-    prePage(){
+    prePage() {
       if (this.paging.PageNumber > 1) {
-        this.paging.PageNumber -= 1
-        this.loadUsers()
+        this.paging.PageNumber -= 1;
+        this.loadUsers();
       }
     },
 
     doSearch(value) {
-      clearTimeout(this.delayTimer);
-      this.paging.Filter = value;
-      this.paging.PageNumber = 1;
-      this.delayTimer = setTimeout(() => {
-        this.loadUsers();
-      }, 1000);
+      if (value) {
+        clearTimeout(this.delayTimer);
+        this.paging.Filter = value;
+        this.paging.PageNumber = 1;
+        this.delayTimer = setTimeout(() => {
+          this.loadUsers();
+        }, 1000);
+      }
     },
     /**
      * Ẩn hiện form thêm user
@@ -425,19 +495,246 @@ export default {
       this.isPageSizeSelectOpened = false;
     },
 
-    deleteUser(data) {
-      console.log(data);
+    async handleDeleteUser(user) {
+      try {
+        this.displayDeleteMessage(user);
+      } catch (error) {
+        console.log(error);
+      }
     },
 
-    editUser(data) {
-      this.selectedUser = data;
-      console.log(this.$refs.editUserPopup.togglePopup());
-      console.log(data);
+    /**
+     * Xử lý sửa người dùng
+     * Author: MDLONG(02/01/2022)
+     * @param {*} user
+     */
+    async handleEditUser(user) {
+      try {
+        let popup = this.$refs.editUserPopup;
+        this.selectedUser = await request.getUserByID(user);
+        popup.setUser(this.selectedUser);
+        popup.show();
+        popup.saveData = this.editUser(this.selectedUser, popup);
+      } catch (error) {
+        console.log(error);
+      }
     },
 
+    /**
+     * Xử lý response khi thêm mới user
+     * Author: MDLONG(03/01/2023)
+     * @param {*} response
+     */
+    handleAddUsers(response) {
+      try {
+        let status = response?.status;
+        let data = response?.data;
+        let messagePopup = this.$refs.messagePopup;
+        let addUserPopup = this.$refs.addUserPopup
+        switch (status) {
+          case StatusCode.CREATED:
+          addUserPopup.togglePopup();
+            this.showMessage({
+              type: "success",
+              text: Message.ADD_SUCCESS.format(data),
+            });
+            this.loadUsers({
+              ...this.paging,
+              SortColumn: "CreatedDate"
+            })
+            break;
+          case StatusCode.BAD_REQUEST:
+            let error = data;
+            let errorCode = error.ErrorCode;
+            let message = error.UserMsg;
+            let moreInfo = error.MoreInfo;
+            switch (errorCode) {
+              case ErrorCode.Duplicated:
+                let dupCode = moreInfo?.UserCode?.join(", ");
+                let dupEmail = moreInfo?.Email?.join(", ");
+
+                let dupCodeMsg = dupCode ? `-${Title.DUPLICATED_USER_CODE}${dupCode}<br>` : ''
+                let dupEmailMsg = dupEmail? `-${Title.DUPLICATED_EMAIL}${dupEmail}` : ''
+                let errMessage = `${Message.DETAILS}<br>` + dupCodeMsg + dupEmailMsg
+                
+                messagePopup.show({
+                  title: message,
+                  content: errMessage,
+                  primaryButton: {
+                    title: Title.CLOSE,
+                  },
+                  extraButton: {
+                    isShow: false,
+                  },
+                });
+                break;
+            }
+            break;
+          case StatusCode.SERVER_INTERNAL_ERROR:
+            messagePopup.show({
+              title: Message.ADD_FAILED,
+              content: Message.SERVER_ERROR,
+              primaryButton: {
+                title: Title.CLOSE,
+              },
+              extraButton: {
+                isShow: false,
+              },
+            });
+            addUserPopup.togglePopup()
+            break;
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    /**
+     * xử lý sự kiện thay đổi dữ liệu của combobox
+     * Author: MDLONG(02/01/2022)
+     * @param {*} e
+     * @param {*} field
+     */
     valueChanged(e, field) {
       this.paging[field] = e.value;
       this.loadUsers();
+    },
+
+    /**
+     * Hiển thị message hỏi trước khi xóa
+     */
+    displayDeleteMessage(user) {
+      let popup = this.$refs.messagePopup;
+      popup.setContent(
+        Title.DELETE,
+        Title.DELETE_QUESTION.format(user.UserName)
+      );
+      let deleteButton = popup.primaryButton;
+      let cancelButton = popup.extraButton;
+      cancelButton.isShow = true;
+      deleteButton.class = "red";
+      deleteButton.action = this.deleteUser(user, popup);
+      popup.show();
+    },
+
+    /**
+     * Xóa user
+     * Author: MDLONG(01/01/2022)
+     * @param {*} user
+     * @param {*} popup
+     */
+    deleteUser(user, popup) {
+      return async () => {
+        try {
+          let response = await request.deleteUser(user);
+          let status = response.status;
+          switch (status) {
+            case StatusCode.OK:
+              this.showMessage({
+                type: "success",
+                text: Message.DELETE_SUCCESS,
+              });
+              break;
+            case StatusCode.BAD_REQUEST:
+              this.showMessage({ type: "error", text: Message.DELETE_FAILED });
+              break;
+          }
+          popup.togglePopup();
+          this.loadUsers();
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    },
+
+    editUser(user, popup) {
+      return async () => {
+        try {
+          if (!popup.disabled) {
+            this.updateUserRole(popup.selectedRoleIDs);
+            let response = await request.editUser(user);
+            let status = response.status;
+            switch (status) {
+              case StatusCode.OK:
+                this.showMessage({
+                  type: "success",
+                  text: Message.EDIT_SUCCESS,
+                });
+                break;
+              case StatusCode.BAD_REQUEST:
+                this.showMessage({
+                  type: "error",
+                  text: Message.EDIT_FAILED,
+                });
+                break;
+            }
+            popup.togglePopup();
+            this.loadUsers();
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+    },
+
+    showMessage(option) {
+      let message = this.message;
+      message.type = option.type;
+      message.text = option.text;
+      message.visible = true;
+    },
+
+    updateUserRole(selectedRoleIDs) {
+      try {
+        let userRoles = this.selectedUser?.Roles;
+        let oldRoleIDs = this.selectedUser?.Roles.map((role) => role.RoleID);
+        let newRoleIDs = selectedRoleIDs;
+        for (let role of userRoles) {
+          //nếu danh sách role id mới chứa role id của thì không làm gì
+          if (newRoleIDs.includes(role.RoleID)) {
+            if (role.RoleName != "NewRole") {
+              role.State = State.NoAction;
+            } else {
+              role.State = State.Add;
+            }
+          } else {
+            // nếu danh sách mới không chứa role cũ thì cần xóa
+            if (role.RoleName != "NewRole") {
+              role.State = State.Delete;
+            } else {
+              //nếu role cũ không chứa tên là những role được thêm vào trên giao diện ko có trong db nên không cần xét
+              role.State = State.NoAction;
+            }
+          }
+        }
+        for (let roleID of newRoleIDs) {
+          //nếu id role mới không có trong danh sách role cũ thì thêm vào danh sách role cũ
+          if (!oldRoleIDs.includes(roleID)) {
+            userRoles.push({
+              RoleID: roleID,
+              RoleName: "NewRole",
+              State: State.Add,
+            });
+          } else {
+            //nếu chứa
+            let userRole = this.getRoleByID(userRoles, roleID);
+            if (userRole.Name == "NewRole") {
+              userRole.State = State.Add;
+            }
+          }
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    getRoleByID(user, RoleID) {
+      for (let role of user) {
+        if (role.RoleID == RoleID) {
+          return role;
+        }
+      }
+      return null;
     },
   },
   created() {
@@ -467,10 +764,11 @@ export default {
   padding: 0 16px;
   display: flex;
   align-items: center;
+  margin-top: 8px;
 }
 
 .table-search {
-  min-width: 260px;
+  min-width: 240px;
 }
 
 #user-table {

@@ -1,9 +1,11 @@
+import { StatusCode } from "@/enums"
+
 const getStatus = (status) => {
     try {
         let resultStatus = {
-            text:"",
+            text: "",
             class: '',
-            iconClass:''
+            iconClass: ''
         }
         switch (status) {
             case 1:
@@ -34,4 +36,29 @@ const getStatus = (status) => {
     }
 }
 
-export {getStatus}
+const handleResponse = (response, ok, created, badRequest) => {
+
+    try {
+        let status = response?.status
+        let data = response?.data
+        data
+        switch (status) {
+            case StatusCode.OK:
+                ok();
+                break;
+            case StatusCode.CREATED:
+                created();
+                break;
+            case StatusCode.BAD_REQUEST:
+                badRequest();
+                break;
+            case StatusCode.NOT_FOUND:
+                badRequest();
+                break;
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
+export { getStatus, handleResponse }

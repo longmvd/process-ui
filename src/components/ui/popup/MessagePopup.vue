@@ -17,6 +17,7 @@
         <div class="popup-btn-group">
           <base-button
             @click="extraButton.action"
+            v-if="extraButton.isShow"
             :buttonClass="'btn--extra mgr-12' + extraButton.class"
             :components="[{ content: extraButton.title }]"
           />
@@ -58,12 +59,12 @@ export default {
   data() {
     return {
       Title,
-      isShow: true,
+      isShow: false,
       primaryButton: {
         isShow: true,
         class:'',
         title: Title.DELETE,
-        action: {},
+        action: this.togglePopup,
       },
       extraButton: {
         isShow: false,
@@ -77,9 +78,9 @@ export default {
         title: "",
         action: {},
       },
-      messageTitle: "Xóa người dùng",
+      messageTitle: "",
       messageContent:
-        "Bạn có chắc chắn muốn xóa <b>Bùi Quang Đức</b> khỏi ứng dụng AMIS Quy trình không?",
+        "",
     };
   },
   methods: {
@@ -92,13 +93,48 @@ export default {
     },
 
     /**
+     * Hiển thị popup
+     */
+    show(config){
+      if(config){
+        this.messageTitle = config.title;
+        this.messageContent = config.content;
+        this.configButton(this.primaryButton, config.primaryButton)
+        this.configButton(this.extraButton, config.extraButton)
+        this.configButton(this.extraSubButton, config.extraSubButton)
+      }
+      this.isShow = true
+    },
+
+    /**
      * Đặt nội dung cho message
      * @param {String} title
      * @param {String} content
      */
     setContent(title, content) {
-      this.MessageTitle = title;
-      this.MessageContent = content;
+      this.messageTitle = title;
+      this.messageContent = content;
+    },
+    
+    /**
+     * Thiết lập nút
+     * Author: MDLONG(04/01/2023)
+     **/
+    configButton(button, config){
+      if(config){
+          if(config.action){
+            button.action = config.action
+          }
+          if(config.title){
+            button.title = config.title
+          }
+          if(config.class){
+            button.class = config.class
+          }
+          if(config.isShow){
+            button.isShow = config.isShow
+          }
+        }
     },
 
   },

@@ -224,7 +224,7 @@ tr.custom-row.dx-data-row.dx-row.dx-row-lines.dx-state-hover {
   ) !important;
 }
 
-.dx-data-row:hover .button-group {
+.dx-data-row.dx-data-row.dx-state-hover .button-group {
   visibility: visible;
   background-color: var(--row-table-bgc);
 }
@@ -237,6 +237,7 @@ tr.custom-row.dx-data-row.dx-row.dx-row-lines.dx-state-hover {
 .button-group {
   height: 100%;
   width: 100%;
+  min-width: 80px;
   visibility: hidden;
 }
 
