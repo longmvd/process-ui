@@ -59,6 +59,7 @@
       <footer class="popup__footer">
         <div class="popup-btn-group">
           <base-button
+          @click="hide"
             buttonClass="btn--extra mgr-12"
             :components="[{ content: Title.CANCEL }]"
           />
@@ -79,6 +80,7 @@ import BaseAvatar from "../avatar/BaseAvatar.vue";
 import BaseButton from "../button/BaseButton.vue";
 // import MsCheckbox from '../input/MsCheckbox.vue';
 import * as request from "@/services";
+import { State } from '@/enums';
 export default {
   name: "EditUserPopup",
   components: {
@@ -103,9 +105,6 @@ export default {
       roles: [],
       saveData: {},
       selectedRoleIDs: [],
-      // "6a9df853-16b5-44d5-97da-0783be03d1d6",
-      // "98fc2f3e-0757-48b4-9a6f-9bd17bffadb6",
-      // "2a7de239-e9f3-4922-b75f-8de32b7f37cf",
     };
   },
   methods: {
@@ -116,25 +115,46 @@ export default {
     togglePopup() {
       this.isShow = !this.isShow;
     },
+    
     /**
      * Hiển thị 
      * Author: MDLONG(27/12/2022)
      */
     show(){
+      this.loadData()
       this.selectedRoleIDs = [...this.user?.Roles.map(role => role.RoleID)]
       this.isShow = true;
+    },
+
+    /**
+     * Ẩn popup
+     * Author: MDLONG(27/12/2022)
+     */
+    hide(){
+      this.isShow = false;
     },
 
     setUser(user){
       this.user = user
     },
 
+    /**
+     * Set tên vai trò
+     * @param {*} user 
+     */
+    setRoleNames(user) {
+      user.RoleNames = user.Roles
+        .filter((role) => role.State == State.Add || (role.State == 0 && !role.IsNew))
+        .map((role) => role.RoleName)
+        .join("; ");
+    },
+    /**
+     * Load dữ liệu từ api
+     * Author: MDLONG(01/01/2023)
+     */
     async loadData() {
       this.roles = await request.getAllRole();
     },
-  },
-  created() {
-    this.loadData();
   },
 };
 </script>

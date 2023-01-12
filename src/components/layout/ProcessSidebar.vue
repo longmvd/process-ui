@@ -1,21 +1,19 @@
 <template>
   <div class="sidebar">
-    <base-list :items="SidebarItem"
-      :defaultValue="defaultItemId"
-     />
+    <router-list :items="SidebarItem" :defaultValue="defaultItemId" />
   </div>
 </template>
 
 <script>
-import BaseList from "../ui/list/BaseList.vue";
+import RouterList from "../ui/list/RouterList.vue";
 import { SidebarItem } from "@/i18n";
 export default {
   name: "ProcessSidebar",
-  components: { BaseList },
+  components: { RouterList },
   data() {
     return {
       SidebarItem,
-      defaultItemId: 0
+      defaultItemId: 0,
     };
   },
 };

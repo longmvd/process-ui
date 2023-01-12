@@ -7,7 +7,7 @@
         </div>
         <div class="content__header--right">
           <base-button
-            @click="toggleAddUserPopup"
+            @click="showAddUserPopup"
             buttonClass="btn--pri flex-m pad-left-12 fw-500"
             :components="[
               { class: 'icon-24 svg-icon icon-plus mgr-4' },
@@ -107,23 +107,42 @@
                 <main>
                   <div class="list-group-wrap list-content">
                     <DxList
-                      :data-source="columns"
+                      :data-source="userColumn"
                       :noDataText="Title.NO_DATA"
                       :show-selection-controls="true"
                       :repaint-changes-only="true"
-                      :selection-mode="selectionMode"
-                      :select-all-mode="selectAllMode"
                       v-model:selected-item-keys="selectedColumns"
                       :search-enabled="true"
-                      :search-expr="['text']"
+                      :search-expr="['caption']"
+                      display-expr="caption"
+                      value-expr="id"
                       @item-reordered="onItemReordered"
                       key-expr="id"
+                      item-template="table-list"
+                      placeholder="Tìm kiếm"
                     >
+                      <DxSearchEditorOptions :placeholder="Title.SEARCH" />
                       <DxItemDragging
-                        data="columns"
+                        :data="userColumn"
                         :allow-reordering="true"
-                        :on-drag-start="onDragStart"
+                        :on-drag-end="reorderColumn"
                       />
+                      <template #table-list="{ data }">
+                        <div class="flex-m cur-point">
+                          <input
+                            type="checkbox"
+                            class="c1 mgr-4"
+                            :id="'tableColumn-' + data.field"
+                            v-model="data.visible"
+                          />
+                          <label
+                            class="flex-1 mgr-4 cur-point"
+                            :for="'tableColumn-' + data.field"
+                            >{{ data.caption }}</label
+                          >
+                          <!-- {{data}} -->
+                        </div>
+                      </template>
                     </DxList>
                   </div>
                 </main>
@@ -134,7 +153,7 @@
                       :components="[{ content: Title.RESTORE_DEFAULT }]"
                     />
                     <base-button
-                      @click="getColumn"
+                      @click="applyNewOrder"
                       buttonClass="btn--pri flex-m fw-500"
                       :components="[{ content: Title.APPLY }]"
                     />
@@ -146,7 +165,7 @@
         </div>
         <div id="user-table">
           <base-table
-            :columns="UserColumn"
+            :columns="userColumn"
             :dataSource="users"
             @delete-row="handleDeleteUser"
             @edit-row="handleEditUser"
@@ -228,7 +247,10 @@
 import DxDropDownBox from "devextreme-vue/drop-down-box";
 import { DxPopup, DxPosition } from "devextreme-vue/popup";
 import { DxPopover } from "devextreme-vue/popover";
-import DxList, { DxItemDragging } from "devextreme-vue/list";
+import DxList, {
+  DxItemDragging,
+  DxSearchEditorOptions,
+} from "devextreme-vue/list";
 import { DxTagBox } from "devextreme-vue/tag-box";
 import { DxSelectBox } from "devextreme-vue/select-box";
 import { DxToast } from "devextreme-vue/toast";
@@ -246,7 +268,7 @@ import MessagePopup from "@/components/ui/popup/MessagePopup.vue";
 import BaseSelectBox from "../components/ui/combobox/BaseSelectBox.vue";
 import BaseTagBox from "@/components/ui/combobox/BaseTagBox";
 import * as request from "@/services";
-import { ErrorCode, State, StatusCode } from "@/enums";
+import { ErrorCode, State, Status, StatusCode } from "@/enums";
 export default {
   name: "UserPage",
   components: {
@@ -260,6 +282,7 @@ export default {
     DxPosition,
     DxList,
     DxItemDragging,
+    DxSearchEditorOptions,
     DxTagBox,
     DxSelectBox,
     DxToast,
@@ -275,15 +298,26 @@ export default {
   },
   computed: {
     startFrom() {
-      return this.users?.length == 0
-        ? 0
-        : (this.paging.PageNumber - 1) * this.paging.PageSize + 1;
+      try {
+        return this.users?.length == 0
+          ? 0
+          : (this.paging.PageNumber - 1) * this.paging.PageSize + 1;
+      } catch (error) {
+        console.log(error);
+        return 0;
+      }
     },
 
     endAt() {
-      return this.users?.length == 0
-        ? 0
-        : this.startFrom + this.paging.PageSize - 1;
+      try {
+        return this.paging.PageNumber * this.paging.PageSize >
+          this.paging.TotalRecord
+          ? this.paging.TotalRecord
+          : this.paging.PageNumber * this.paging.PageSize;
+      } catch (error) {
+        console.log(error);
+        return 0;
+      }
     },
   },
   data() {
@@ -294,6 +328,7 @@ export default {
       isPageSizeSelectOpened: false,
       isShowAddUserPopup: true,
       isLoading: false,
+      timeOutLoading: null,
 
       message: {
         visible: false,
@@ -321,7 +356,8 @@ export default {
       },
       selectedColumns: [],
 
-      UserColumn,
+      userColumn: [...UserColumn],
+      tempColumn: [...UserColumn],
       paging: {
         PageSize: 15,
         PageNumber: 1,
@@ -333,6 +369,55 @@ export default {
         RoleID: "",
         Desc: true,
       },
+
+      conditionQueries: [
+        [
+          {
+            Relationship: "AND",
+            Column: "",
+            Operator: "",
+            Value: "",
+            SubQuery: [
+              {
+                Relationship: null,
+                Column: "UserName",
+                Operator: "LIKE",
+                Value: "%long%",
+                SubQuery: null,
+              },
+              {
+                Relationship: "OR",
+                Column: "Email",
+                Operator: "LIKE",
+                Value: "%nvcuong1%",
+                SubQuery: null,
+              },
+            ],
+          },
+          {
+            Relationship: "AND",
+            Column: "d.DepartmentID",
+            Operator: "=",
+            Value: null,
+            SubQuery: null,
+          },
+          {
+            Relationship: "AND",
+            Column: "j.JobPositionID",
+            Operator: "IN",
+            Value: "57cdf8c4-47e3-5560-7e41-c1ec321fe728",
+            SubQuery: null,
+          },
+          {
+            Relationship: "AND",
+            Column: "r.RoleID",
+            Operator: "=",
+            Value: "2b5f15b9-17d9-57e8-1e4a-aea48a10ed18",
+            SubQuery: null,
+          },
+        ],
+      ],
+
       pageSizeOptionConfig: {
         id: "paging",
         name: "paging",
@@ -361,10 +446,17 @@ export default {
       this.isShowTableSetting = !this.isShowTableSetting;
     },
 
+    /**
+     * Hiển thị tab setting
+     */
     showTableSetting() {
       this.isShowTableSetting = true;
     },
 
+    /**
+     * Lấy dữ liệu từ api
+     * Author: MDLONG(01/01/2022)
+     */
     async loadData() {
       this.loadUsers();
       this.loadDepartments();
@@ -372,6 +464,10 @@ export default {
       this.loadRoles();
     },
 
+    /**
+     * Lấy phòng ban từ api
+     * Author: MDLONG(01/01/2022)
+     */
     async loadDepartments() {
       try {
         this.departments = await request.getAllDepartment();
@@ -384,8 +480,13 @@ export default {
       }
     },
 
+    /**
+     * Lấy vai trò từ api
+     * Author: MDLONG(01/01/2022)
+     */
     async loadRoles(setDefault = true) {
       try {
+        debugger
         this.roles = await request.getAllRole();
         if (setDefault)
           this.roles?.unshift({ RoleID: null, RoleName: Title.ALL });
@@ -401,13 +502,21 @@ export default {
     async loadUsers(option) {
       try {
         this.isLoading = true;
-        let data
-        if(option){
-          data = await request.getUserByFilter(option);
-        }else{
-          data = await request.getUserByFilter(this.paging);
+        // if (this.timeOutLoading) clearTimeout(this.timeOutLoading);
+        // this.timeOutLoading = setTimeout(() => {
+        //   let count;
+        // }, 5000000000);
+        let sendObject;
+        if (option) {
+          sendObject = this.standardizeFilter(option);
+        } else {
+          sendObject = this.standardizeFilter(this.paging);
         }
+        let data = await request.getUserByFilter(sendObject);
         this.isLoading = false;
+        //Xử lý ẩn loading
+        
+
         this.users = data?.Data;
         this.paging.TotalRecord = data?.TotalRecord;
         this.paging.TotalPage = data?.TotalPage;
@@ -416,16 +525,28 @@ export default {
       }
     },
 
+    /**
+     * Lấy vị trí từ api
+     * Author: MDLONG(01/01/2022)
+     */
     async loadJobPositions() {
       this.jobPositions = await request.getAllJobPosition();
     },
 
+    /**
+     * Đặt lại kích thước trang
+     * Author: MDLONG(01/01/2022)
+     */
     resizePage(selected) {
       this.paging.PageSize = selected.value;
       this.paging.PageNumber = 1;
       this.loadUsers();
     },
 
+    /**
+     * Trang kế
+     * Author: MDLONG(01/01/2022)
+     */
     nextPage() {
       if (this.paging.PageNumber < this.paging.TotalPage) {
         this.paging.PageNumber += 1;
@@ -434,7 +555,7 @@ export default {
     },
 
     /**
-     * trang kế
+     * Trang trước
      * Author: MDLONG(01/01/2022)
      */
     prePage() {
@@ -444,8 +565,13 @@ export default {
       }
     },
 
+    /**
+     * Tìm kiếm
+     * Author:MDLONG(04/01/2023)
+     * @param {*} value
+     */
     doSearch(value) {
-      if (value) {
+      if (value != undefined) {
         clearTimeout(this.delayTimer);
         this.paging.Filter = value;
         this.paging.PageNumber = 1;
@@ -457,9 +583,9 @@ export default {
     /**
      * Ẩn hiện form thêm user
      */
-    toggleAddUserPopup() {
+    showAddUserPopup() {
       try {
-        this.$refs.addUserPopup.togglePopup();
+        this.$refs.addUserPopup.show();
       } catch (error) {
         console.log(error);
       }
@@ -495,6 +621,11 @@ export default {
       this.isPageSizeSelectOpened = false;
     },
 
+    /**
+     * Xử lý xóa người dùng
+     * Author: MDLONG(06/01/2023)
+     * @param {Object} user
+     */
     async handleDeleteUser(user) {
       try {
         this.displayDeleteMessage(user);
@@ -530,45 +661,21 @@ export default {
         let status = response?.status;
         let data = response?.data;
         let messagePopup = this.$refs.messagePopup;
-        let addUserPopup = this.$refs.addUserPopup
+        let addUserPopup = this.$refs.addUserPopup;
         switch (status) {
           case StatusCode.CREATED:
-          addUserPopup.togglePopup();
+            addUserPopup.hide();
             this.showMessage({
               type: "success",
               text: Message.ADD_SUCCESS.format(data),
             });
             this.loadUsers({
               ...this.paging,
-              SortColumn: "CreatedDate"
-            })
+              SortColumn: "CreatedDate",
+            });
             break;
           case StatusCode.BAD_REQUEST:
-            let error = data;
-            let errorCode = error.ErrorCode;
-            let message = error.UserMsg;
-            let moreInfo = error.MoreInfo;
-            switch (errorCode) {
-              case ErrorCode.Duplicated:
-                let dupCode = moreInfo?.UserCode?.join(", ");
-                let dupEmail = moreInfo?.Email?.join(", ");
-
-                let dupCodeMsg = dupCode ? `-${Title.DUPLICATED_USER_CODE}${dupCode}<br>` : ''
-                let dupEmailMsg = dupEmail? `-${Title.DUPLICATED_EMAIL}${dupEmail}` : ''
-                let errMessage = `${Message.DETAILS}<br>` + dupCodeMsg + dupEmailMsg
-                
-                messagePopup.show({
-                  title: message,
-                  content: errMessage,
-                  primaryButton: {
-                    title: Title.CLOSE,
-                  },
-                  extraButton: {
-                    isShow: false,
-                  },
-                });
-                break;
-            }
+            handleAddUserBadRequest(data, messagePopup);
             break;
           case StatusCode.SERVER_INTERNAL_ERROR:
             messagePopup.show({
@@ -576,16 +683,58 @@ export default {
               content: Message.SERVER_ERROR,
               primaryButton: {
                 title: Title.CLOSE,
+                class: " ",
+                action: messagePopup.hide,
               },
               extraButton: {
                 isShow: false,
               },
             });
-            addUserPopup.togglePopup()
+            addUserPopup.togglePopup();
             break;
         }
       } catch (error) {
         console.log(error);
+      }
+
+      /**
+       * Xử lý badRequest thêm user
+       * @param {*} data
+       * @param {*} messagePopup
+       */
+      function handleAddUserBadRequest(data, messagePopup) {
+        let error = data;
+        let errorCode = error.ErrorCode;
+        let message = error.UserMsg;
+        let moreInfo = error.MoreInfo;
+        switch (errorCode) {
+          case ErrorCode.Duplicated:
+            let dupCode = moreInfo?.UserCode?.join(", ");
+            let dupEmail = moreInfo?.Email?.join(", ");
+
+            let dupCodeMsg = dupCode
+              ? `- ${Title.DUPLICATED_USER_CODE}${dupCode}<br>`
+              : "";
+            let dupEmailMsg = dupEmail
+              ? `- ${Title.DUPLICATED_EMAIL}${dupEmail}`
+              : "";
+            let errMessage =
+              `${Message.DETAILS}<br>` + dupCodeMsg + dupEmailMsg;
+
+            messagePopup.show({
+              title: message,
+              content: errMessage,
+              primaryButton: {
+                title: Title.CLOSE,
+                class: " ",
+                action: messagePopup.hide,
+              },
+              extraButton: {
+                isShow: false,
+              },
+            });
+            break;
+        }
       }
     },
 
@@ -596,25 +745,30 @@ export default {
      * @param {*} field
      */
     valueChanged(e, field) {
+      this.paging.PageNumber = 1;
       this.paging[field] = e.value;
       this.loadUsers();
     },
 
     /**
      * Hiển thị message hỏi trước khi xóa
+     * Author: MDLONG(01/01/2022)
      */
     displayDeleteMessage(user) {
       let popup = this.$refs.messagePopup;
-      popup.setContent(
-        Title.DELETE,
-        Title.DELETE_QUESTION.format(user.UserName)
-      );
-      let deleteButton = popup.primaryButton;
-      let cancelButton = popup.extraButton;
-      cancelButton.isShow = true;
-      deleteButton.class = "red";
-      deleteButton.action = this.deleteUser(user, popup);
-      popup.show();
+      popup.show({
+        title: Title.DELETE,
+        content: Title.DELETE_QUESTION.format(user.UserName),
+        primaryButton: {
+          title: Title.DELETE,
+          class: "red",
+          action: this.deleteUser(user, popup),
+        },
+        extraButton: {
+          isShow: true,
+          action: popup.hide,
+        },
+      });
     },
 
     /**
@@ -626,6 +780,7 @@ export default {
     deleteUser(user, popup) {
       return async () => {
         try {
+          popup.togglePopup();
           let response = await request.deleteUser(user);
           let status = response.status;
           switch (status) {
@@ -639,14 +794,25 @@ export default {
               this.showMessage({ type: "error", text: Message.DELETE_FAILED });
               break;
           }
-          popup.togglePopup();
-          this.loadUsers();
+          await this.loadUsers();
+          if (this.users.length == 0) {
+            if (this.paging.PageNumber != 1) {
+              this.paging.PageNumber = 1;
+              this.loadUsers();
+            }
+          }
         } catch (error) {
           console.log(error);
         }
       };
     },
 
+    /**
+     * Sửa user
+     * Author: MDLONG(01/01/2022)
+     * @param {*} user
+     * @param {*} popup
+     */
     editUser(user, popup) {
       return async () => {
         try {
@@ -677,6 +843,11 @@ export default {
       };
     },
 
+    /**
+     * Hiển thị message
+     * MDLONG(04/01/2023)
+     * @param {*} option
+     */
     showMessage(option) {
       let message = this.message;
       message.type = option.type;
@@ -684,6 +855,11 @@ export default {
       message.visible = true;
     },
 
+    /**
+     * Cập nhật vai trò user
+     * Author: MDLONG(04/01/2023)
+     * @param {*} selectedRoleIDs
+     */
     updateUserRole(selectedRoleIDs) {
       try {
         let userRoles = this.selectedUser?.Roles;
@@ -692,14 +868,14 @@ export default {
         for (let role of userRoles) {
           //nếu danh sách role id mới chứa role id của thì không làm gì
           if (newRoleIDs.includes(role.RoleID)) {
-            if (role.RoleName != "NewRole") {
+            if (!role.IsNew) {
               role.State = State.NoAction;
             } else {
               role.State = State.Add;
             }
           } else {
             // nếu danh sách mới không chứa role cũ thì cần xóa
-            if (role.RoleName != "NewRole") {
+            if (!role.IsNew) {
               role.State = State.Delete;
             } else {
               //nếu role cũ không chứa tên là những role được thêm vào trên giao diện ko có trong db nên không cần xét
@@ -709,32 +885,170 @@ export default {
         }
         for (let roleID of newRoleIDs) {
           //nếu id role mới không có trong danh sách role cũ thì thêm vào danh sách role cũ
+          let userRole = this.getRoleByID(this.roles, roleID);
           if (!oldRoleIDs.includes(roleID)) {
             userRoles.push({
               RoleID: roleID,
-              RoleName: "NewRole",
+              RoleName: userRole?.RoleName,
               State: State.Add,
+              IsNew: true,
             });
           } else {
             //nếu chứa
-            let userRole = this.getRoleByID(userRoles, roleID);
-            if (userRole.Name == "NewRole") {
+            if (userRole.IsNew) {
               userRole.State = State.Add;
             }
           }
         }
+        this.setRoleNames(this.selectedUser);
+        // console.log(this.selectedUser)
       } catch (error) {
         console.log(error);
       }
     },
 
-    getRoleByID(user, RoleID) {
-      for (let role of user) {
+    /**
+     * Lấy vai trò theo id
+     * Author:MDLONG(01/01/2023)
+     * @param {Object} user
+     * @param {*} RoleID
+     */
+    getRoleByID(roles, RoleID) {
+      for (let role of roles) {
         if (role.RoleID == RoleID) {
           return role;
         }
       }
       return null;
+    },
+
+    /**
+     * Set tên vai trò
+     * @param {*} user
+     */
+    setRoleNames(user) {
+      user.RoleNames = user.Roles.filter(
+        (role) => role.State == State.Add || (role.State == 0 && !role.IsNew)
+      )
+        .map((role) => role.RoleName)
+        .join("; ");
+    },
+
+    /**
+     * Áp dụng cột mới
+     */
+    applyNewOrder() {
+      this.userColumn = [...this.tempColumn];
+      console.log(this.tempColumn);
+      console.log(this.userColumn);
+    },
+
+    reorderColumn(e) {
+      try {
+        // let column = this.userColumn;
+        // console.log(column)[
+        //   (this.userColumn[e.fromIndex], this.userColumn[e.toIndex])
+        // ] = [this.userColumn[e.toIndex], this.userColumn[e.fromIndex]];
+        let column = [...this.userColumn];
+        this.swapElements(column, e.fromIndex, e.toIndex);
+        this.tempColumn = column;
+      } catch (error) {
+        console.log(error);
+      }
+    },
+    /**
+     * đổi vị trí phần tử trong mảng
+     * @param {*} arr
+     * @param {*} i1
+     * @param {*} i2
+     */
+    swapElements(arr, i1, i2) {
+      [arr[i1], arr[i2]] = [arr[i2], arr[i1]];
+    },
+
+    /**
+     * Chuẩn hóa dữ liệu gửi lên server
+     * Author: MDLONG(11/01/2022)
+     * @param {*} paging
+     */
+    standardizeFilter(paging) {
+      try {
+        let sendObject = {
+          PageNumber: paging.PageNumber,
+          PageSize: paging.PageSize,
+          SortColumn: paging.SortColumn,
+          Desc: paging.Desc
+        };
+        let conditionQueries = [];
+        for (let [key, value] of Object.entries(paging)) {
+          if (value) {
+            switch (key) {
+              case "Filter":
+                conditionQueries.push({
+                  Relationship: "AND",
+                  SubQuery: [
+                    {
+                      Relationship: "",
+                      Column: "UserCode",
+                      Operator: "LIKE",
+                      Value: value,
+                      SubQuery: null,
+                    },
+                    {
+                      Relationship: "OR",
+                      Column: "UserName",
+                      Operator: "LIKE",
+                      Value: value,
+                      SubQuery: null,
+                    },
+                    {
+                      Relationship: "OR",
+                      Column: "Email",
+                      Operator: "LIKE",
+                      Value: value,
+                      SubQuery: null,
+                    },
+                  ],
+                });
+                break;
+              case "DepartmentID":
+                conditionQueries.push({
+                  Relationship: "AND",
+                  Column: "d.DepartmentID",
+                  Operator: "=",
+                  Value: value,
+                  SubQuery: null,
+                });
+                break;
+              case "JobPositionIDs":
+                conditionQueries.push({
+                  Relationship: "AND",
+                  Column: "j.JobPositionID",
+                  Operator: "IN",
+                  Value: value.join(","),
+                  SubQuery: null,
+                });
+                break;
+              case "RoleID":
+                conditionQueries.push({
+                  Relationship: "AND",
+                  Column: "r.RoleID",
+                  Operator: "=",
+                  Value: value,
+                  SubQuery: null,
+                });
+                break;
+            }
+          }
+        }
+        
+        return {
+          ...sendObject,
+          conditionQueries,
+        }
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
   created() {
@@ -829,11 +1143,14 @@ export default {
 .table-setting {
   position: relative;
 }
+
 #table-setting-form {
 }
+
 #table-setting-popup {
   position: absolute;
 }
+
 .command-wrap {
   display: flex;
   justify-content: flex-end;
@@ -887,6 +1204,10 @@ export default {
   border-spacing: 0;
   margin: 0;
   max-width: 10px;
+}
+
+.list-group-wrap {
+  padding-left: 0px;
 }
 
 @media only screen and (max-height: 768px) {

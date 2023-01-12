@@ -33,6 +33,7 @@
         @value-changed="valueChanged"
         :multiline="true"
       />
+      <!-- <i class="icon-24 dx-dropdowneditor-icon drop-down-icon"></i> -->
     </div>
     <span v-if="!isValid" class="err-message">{{ errorMessage }}</span>
   </div>
@@ -66,8 +67,8 @@ export default {
     rules: Array,
     height: Number,
     showMultiTagOnly: Boolean,
-    showScrollbar:Boolean,
-    value:[String, Object, Array]
+    showScrollbar: Boolean,
+    value: [String, Object, Array],
   },
   components: {
     DxTagBox,
@@ -82,7 +83,7 @@ export default {
   },
   methods: {
     /**
-     * Validate 
+     * Validate
      *  Author: MDLONG(30/12/2022)
      */
     validate() {
@@ -104,8 +105,8 @@ export default {
       return this.errorMessage;
     },
 
-     /**
-     * sự kiện liệu thay đổi 
+    /**
+     * sự kiện liệu thay đổi
      *  Author: MDLONG(30/12/2022)
      */
     valueChanged(e) {
@@ -119,13 +120,19 @@ export default {
      * Author: MDLONG(30/10/2022)
      * @param {*} event
      */
+    /**
+     * Kiểm tra để trống
+     * Author: MDLONG(30/10/2022)
+     * @param {*} event
+     */
     checkRequired(message) {
+      let isValid = false;
       let value = this.selectedValue;
       if (value) {
-        return true;
+        isValid = value.length > 0 ? true : false;
       }
-      this.errorMessage = message;
-      return false;
+      if (!isValid) this.errorMessage = message;
+      return isValid;
     },
   },
 };
@@ -137,9 +144,14 @@ export default {
   padding-left: 28px;
 }
 
+.drop-down-icon {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  right: 0;
+}
+
 .el-wrapper.error .dx-dropdowneditor {
   border-color: var(--error-color) !important;
 }
-
-
 </style>

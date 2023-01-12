@@ -39,6 +39,7 @@ const NavbarItem = [
 const SidebarItem = [
   {
     id: 0,
+    to: '/users',
     itemClass: "sidebar__item sidebar-user",
     iconClass: "icon-24 svg-icon-process mgr-4 sidebar-icon icon-employee",
     nameClass: "",
@@ -46,6 +47,7 @@ const SidebarItem = [
   },
   {
     id: 1,
+    to: '/roles',
     itemClass: "sidebar__item sidebar-role",
     iconClass: "icon-24 svg-icon-process mgr-4 sidebar-icon icon-protect",
     nameClass: "",
@@ -53,6 +55,7 @@ const SidebarItem = [
   },
   {
     id: 2,
+    to: '/groups',
     itemClass: "sidebar__item sidebar-group",
     iconClass: "icon-24 svg-icon-process mgr-4 sidebar-icon icon-group",
     nameClass: "",
@@ -60,6 +63,7 @@ const SidebarItem = [
   },
   {
     id: 3,
+    to: '/connect',
     itemClass: "sidebar__item sidebar-connect",
     iconClass: "icon-24 svg-icon-process mgr-4 sidebar-icon icon-connect",
     nameClass: "",
@@ -68,16 +72,7 @@ const SidebarItem = [
 ];
 
 const UserColumn = [
-  {
-    id: 0,
-    width: 200,
-    minWidth: 100,
-    field: "UserID",
-    caption: "ID",
-    text: "ID",
-    cellTemplate: "title-tooltip",
-    visible: false,
-  },
+
   {
     id: 1,
     width: 200,
@@ -96,15 +91,19 @@ const UserColumn = [
     caption: "Họ và tên",
     text: "Họ và tên",
     cellTemplate: "avatar-cell",
+    visible: true,
+
   },
   {
     id: 3,
     width: 200,
-    minWidth: 100,
+    minWidth: 110,
     field: "DepartmentName",
     caption: "Phòng ban",
     text: "Phòng ban",
     cellTemplate: "title-tooltip",
+    visible: true,
+
   },
   {
     id: 4,
@@ -114,6 +113,8 @@ const UserColumn = [
     caption: "Vị trí công việc",
     text: "Vị trí công việc",
     cellTemplate: "title-tooltip",
+    visible: true,
+
   },
   {
     id: 5,
@@ -123,6 +124,8 @@ const UserColumn = [
     caption: "Email",
     text: "Email",
     cellTemplate: "title-tooltip",
+    visible: true,
+
   },
   {
     id: 6,
@@ -132,16 +135,20 @@ const UserColumn = [
     caption: "Vai trò",
     text: "Vai trò",
     cellTemplate: "title-tooltip",
+    visible: true,
+
   },
   {
     id: 7,
     width: 200,
-    minWidth: 100,
+    minWidth: 150,
     field: "Status",
     caption: "Trạng thái",
     dataType: "string",
     text: "Trạng thái",
     cellTemplate: "status-cell",
+    visible: true,
+
   },
 ]
 
@@ -200,7 +207,7 @@ const UserColumnAdd = [
     caption: "Email",
     cellTemplate: null,
     visible: true,
-
+    required: true,
   },
   {
     id: 6,
@@ -240,6 +247,7 @@ const UserColumnAdd = [
 
 const Message = {
   REQUIRED: "Không để trống.",
+  MAX_LENGTH: "Không quá {0} ký tự.",
   INVALID_EMAIL: "Email không đúng định dạng.",
   DUPLICATE_USER_CODE: "Mã trùng.",
   DUPLICATE_EMAIL: "Email trùng.",
@@ -250,8 +258,47 @@ const Message = {
   EDIT_SUCCESS: "Sửa thành công.",
   EDIT_FAILED: "Sửa thất bại.",
   DETAILS: "Chi tiết: ",
-  SERVER_ERROR: "Có lỗi xảy ra, vui lòng liên hệ Misa."
+  SERVER_ERROR: "Có lỗi xảy ra, vui lòng liên hệ Misa.",
+  COMING_SOON: "Tính năng đang phát triển."
 }
+
+// [
+//   {
+//     "Relationship": "And",
+//     "Column": "",
+//     "Operator": "",
+//     "Value": "",
+//     "SubQuery": {
+//       "Operator": "And",
+//       "Detail": [
+//         {
+//           "Relationship": "Or",
+//           "Column": "FirstName",
+//           "Operator": "Like",
+//           "Value": "%nvcuong1%",
+//           "SubQuery": null
+//         },
+//         {
+//           "Relationship": "Or",
+//           "Column": "LastName",
+//           "Operator": "Like",
+//           "Value": "%nvcuong1%",
+//           "SubQuery": null
+//         }
+//       ]
+//     }
+//   },
+//   {
+//     "Relationship": "And",
+//     "Column": "JobPositionID",
+//     "Operator": "=",
+//     "Value": "12",
+//     "SubQuery": null
+//   }
+// ]
+
+// => Where 1=1 And (FirstName Like "%nvcuong1%"  or LastName Like "%nvcuong1") And JobPositionID = 12
+
 
 const UserStatus = [{ TEXT: "Chưa kích hoạt", VALUE: 1 }, { TEXT: "Chờ xác nhận", VALUE: 2 }, { TEXT: "Đang hoạt động", VALUE: 3 }, { TEXT: "Ngừng kích hoạt", VALUE: 4 }]
 

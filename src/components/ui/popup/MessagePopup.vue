@@ -16,8 +16,8 @@
       <footer class="popup__footer">
         <div class="popup-btn-group">
           <base-button
-            @click="extraButton.action"
             v-if="extraButton.isShow"
+            @click="extraButton.action"
             :buttonClass="'btn--extra mgr-12' + extraButton.class"
             :components="[{ content: extraButton.title }]"
           />
@@ -70,7 +70,7 @@ export default {
         isShow: false,
         class:'',
         title: Title.CANCEL,
-        action: this.togglePopup,
+        action: this.hide,
       },
       extraSubButton: {
         isShow: false,
@@ -107,6 +107,14 @@ export default {
     },
 
     /**
+     * Ẩn popup
+     * Author: MDLONG(01/01/2022)
+     */
+    hide(){
+      this.isShow = false;
+    },
+
+    /**
      * Đặt nội dung cho message
      * @param {String} title
      * @param {String} content
@@ -131,7 +139,7 @@ export default {
           if(config.class){
             button.class = config.class
           }
-          if(config.isShow){
+          if(config.isShow != undefined){
             button.isShow = config.isShow
           }
         }

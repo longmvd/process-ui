@@ -65,7 +65,7 @@
     padding: 2px 8px 2px 8px!important;
     width: 100%;
     overflow-y: auto;
-    max-height: 100px;
+    max-height: 66px;
 }
 
 .dx-tag-remove-button{
@@ -142,4 +142,33 @@
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-  }
+}
+
+.dx-searchbox .dx-icon-search::before {
+    content: "";
+    color: #999;
+}
+
+.dx-searchbox .dx-icon-search {
+    width: 30px;
+    height: 30px;
+    -webkit-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -moz-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -ms-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -o-mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    mask-image: url(../../assets/img/Icon_process.0a0cc28b.svg);
+    -webkit-mask-position: -285px 3px;
+    -moz-mask-position: -285px 3px;
+    -ms-mask-position: -285px 3px;
+    -o-mask-position: -285px 3px;
+    mask-position: -285px 3px;
+    -webkit-mask-repeat: no-repeat;
+    -moz-mask-repeat: no-repeat;
+    -ms-mask-repeat: no-repeat;
+    -o-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    transform: scale(1);
+    background-color: var(--icon-light-color);
+    padding: 0;
+
+}

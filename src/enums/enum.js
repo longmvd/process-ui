@@ -33,4 +33,32 @@ const ErrorCode = {
     Failed: 5,
 }
 
-export { StatusCode, State, ErrorCode }
+const Status = {
+    /// <summary>
+    /// Chưa kích hoạt
+    /// </summary>
+    NotActivated: 1,
+
+    /// <summary>
+    /// Chờ xác nhận
+    /// </summary>
+    Pending: 2,
+
+    /// <summary>
+    /// Đang hoạt động
+    /// </summary>
+    Active: 3,
+
+    /// <summary>
+    /// Ngừng kích hoạt
+    /// </summary>
+    Inactive: 4,
+
+}
+
+const LimitLength = {
+    EMAIL: 255,
+    USER_CODE: 20,
+    USER_NAME: 100,
+}
+export { StatusCode, State, ErrorCode, LimitLength, Status }

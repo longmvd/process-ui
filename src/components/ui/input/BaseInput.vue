@@ -88,10 +88,10 @@ export default {
               isValid = this.checkPhone(rule["phone"]);
               if (!isValid) break;
             } else if (rule?.hasOwnProperty("minLength")) {
-              isValid = this.checkMinLenght(rule["minLength"], rule.cLength);
+              isValid = this.checkMinLength(rule["minLength"], rule.cLength);
               if (!isValid) break;
             } else if (rule?.hasOwnProperty("maxLength")) {
-              isValid = this.checkMaxLenght(rule["maxLength"], rule.cLength);
+              isValid = this.checkMaxLength(rule["maxLength"], rule.cLength);
               if (!isValid) break;
             }
           }
@@ -162,7 +162,7 @@ export default {
      * @param {string} message
      * @param {integer} min
      */
-    checkMinLenght(message, min) {
+    checkMinLength(message, min) {
       let value = this.modelValue;
       if (value) {
         let msg =
@@ -182,7 +182,7 @@ export default {
      * @param {string} message
      * @param {integer} min
      */
-    checkMaxLenght(message, max) {
+    checkMaxLength(message, max) {
       let value = this.modelValue;
       if (value) {
         let msg =

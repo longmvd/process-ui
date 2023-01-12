@@ -5,6 +5,7 @@
     padding: 0 16px 0 0;
     border-bottom: 1px solid #e7e8e9;
     display: flex;
+    min-width: 1366px;
 }
 
 .grid-app-menu {

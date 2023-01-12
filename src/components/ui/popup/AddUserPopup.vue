@@ -4,7 +4,7 @@
       <header class="popup__header">
         <div class="header-title">{{ Title.ADD_USER }}</div>
         <base-button
-          @click="togglePopup"
+          @click="hide"
           buttonClass="btn--round bg-white change-color-btn flex-c-m"
           :components="[{ class: 'icon-24 svg-icon icon-close-2' }]"
         >
@@ -44,7 +44,6 @@
                     value-expr="DepartmentID"
                     display-expr="DepartmentName"
                     width="200"
-                    placeholder="Chọn phòng ban"
                     :value="user[field]"
                     @value-changed="getSelected($event, user, field)"
                     :rules="[{ required: Message.REQUIRED }]"
@@ -72,7 +71,6 @@
                     :value="user[field]"
                     display-expr="RoleName"
                     @value-changed="getSelected($event, user, field)"
-                    placeholder="Chọn vai trò"
                     :rules="[{ required: Message.REQUIRED }]"
                     ref="userField"
                   >
@@ -83,7 +81,6 @@
                     width="200"
                     value-expr="VALUE"
                     display-expr="TEXT"
-                    placeholder="Chọn trạng thái"
                     :rules="[{ required: Message.REQUIRED }]"
                     @value-changed="getSelected($event, user, field)"
                     ref="userField"
@@ -96,6 +93,10 @@
                     :inputClass="field"
                     :rules="[
                       { required: Message.REQUIRED },
+                      {
+                        maxLength: Message.MAX_LENGTH.format(LimitLength.EMAIL),
+                        cLength: LimitLength.EMAIL,
+                      },
                       { email: Message.INVALID_EMAIL },
                     ]"
                     ref="userField"
@@ -105,7 +106,15 @@
                     v-model="user[field]"
                     class="mw-120"
                     :isRequired="true"
-                    :rules="[{ required: Message.REQUIRED }]"
+                    :rules="[
+                      { required: Message.REQUIRED },
+                      {
+                        maxLength: Message.MAX_LENGTH.format(
+                          LimitLength.USER_CODE
+                        ),
+                        cLength: LimitLength.USER_CODE,
+                      },
+                    ]"
                     :inputClass="field"
                     ref="userField"
                   ></base-input>
@@ -114,7 +123,15 @@
                     v-model="user[field]"
                     class="mw-200"
                     :isRequired="true"
-                    :rules="[{ required: Message.REQUIRED }]"
+                    :rules="[
+                      { required: Message.REQUIRED },
+                      {
+                        maxLength: Message.MAX_LENGTH.format(
+                          LimitLength.USER_NAME
+                        ),
+                        cLength: LimitLength.USER_NAME,
+                      },
+                    ]"
                     ref="userField"
                   ></base-input>
                 </td>
@@ -146,6 +163,7 @@
       <footer class="popup__footer">
         <div class="popup-btn-group">
           <base-button
+            @click="hide"
             buttonClass="btn--extra mgr-12"
             :components="[{ content: Title.CANCEL }]"
           />
@@ -163,6 +181,7 @@
 <script>
 /* eslint-disable */
 import { Title, UserColumnAdd, UserStatus, Message } from "@/i18n";
+import { LimitLength } from "@/enums";
 import {
   DxDataGrid,
   DxEditing,
@@ -203,6 +222,7 @@ export default {
       Message,
       UserColumnAdd,
       UserStatus,
+      LimitLength,
       jobPositions: [],
       departments: [],
       users: [
@@ -219,17 +239,36 @@ export default {
       roles: [],
     };
   },
-  emits:['addUsers'],
+
+  emits: ["addUsers"],
   methods: {
     /**
      * Ẩn hiện popup
      * Author: MDLONG(27/12/2022)
      */
     togglePopup() {
-      this.initForm()
+      this.initForm();
       this.isShow = !this.isShow;
+      // this.focusFirstInput()
     },
 
+    /**
+     * Hiện popup
+     * Author: MDLONG(27/12/2022)
+     */
+    show() {
+      this.initForm();
+      this.isShow = true;
+    },
+
+    hide() {
+      this.isShow = false;
+    },
+
+    /**
+     * Thêm dòng mới
+     * Author: MDLONG(27/12/2022)
+     */
     addNewRow() {
       this.users.push({
         UserCode: "",
@@ -242,23 +281,26 @@ export default {
       });
     },
 
-    //event
-    initNewRow(e) {
-      console.log(e.component.getDataSource());
-    },
-
+    /**
+     * load dữ liệu
+     * Author: MDLONG(27/12/2022)
+     */
     async loadData() {
       this.roles = await request.getAllRole();
       this.jobPositions = await request.getAllJobPosition();
       this.departments = await request.getAllDepartment();
     },
 
+    /**
+     * Lưu dữ liệu
+     * Author: MDLONG(27/12/2022)
+     */
     async saveData() {
       this.validate();
-      if(this.isValid){
-        // let validateResponse = await request.
-        let response = await request.addUser(this.users)
-        this.$emit('addUsers', response)
+      if (this.isValid) {
+        let users = this.setRoleNameForUser()
+        let response = await request.addUser(users);
+        this.$emit("addUsers", response);
       }
     },
 
@@ -271,10 +313,12 @@ export default {
         this.isValid = true;
         let focusFirst = true;
         let distinctField = [];
+
+        //vừa validate vừa lấy ra các trường không cho phép trùng giá trị
         for (let field of this.$refs.userField) {
           field.validate();
           let input = field.$el.querySelector("input");
-          if(input.type =='hidden'){
+          if (input.type == "hidden") {
             input = field.$el.querySelectorAll("input")[1];
           }
           //lấy ra trường usercode và email
@@ -284,6 +328,7 @@ export default {
           ) {
             distinctField.push(field);
           }
+          // focus trường lỗi
           if (!field.isValid) {
             this.isValid = false;
             if (focusFirst) {
@@ -324,7 +369,7 @@ export default {
             Message.DUPLICATE_USER_CODE
           );
           let validEmail = this.checkDuplicate(emails, Message.DUPLICATE_EMAIL);
-          this.isValid = validCode && validEmail
+          this.isValid = validCode && validEmail;
         }
       } catch (error) {
         console.log(error);
@@ -365,6 +410,10 @@ export default {
       return isValid;
     },
 
+    /**
+     * gán giá trị được chọn cho trường
+     * Author: MDLONG(27/12/2022)
+     */
     getSelected(e, object, field) {
       try {
         object[field] = e.value;
@@ -373,13 +422,23 @@ export default {
       }
     },
 
+    /**
+     * Xóa dòng
+     * Author: MDLONG(27/12/2022)
+     * @param {*} index
+     */
     deleteRow(index) {
       this.users = this.users.filter((value, i) => index != i);
       // this.users.splice(index, 1);
     },
 
-    initForm(){
-      this.users = [{
+    /**
+     * Khởi tạo form
+     * Author: MDLONG(27/12/2022)
+     */
+    initForm() {
+      this.users = [
+        {
           UserCode: "NV02342",
           UserName: "Mai Đại Long",
           DepartmentID: "",
@@ -387,11 +446,44 @@ export default {
           Email: "maidailong@gmail.com",
           RoleIDs: [],
           Status: 1,
-        },]
+        },
+      ];
     },
 
-    log(x) {
-      console.log(x);
+    /**
+     * Set tên vai trò cho user
+     * Author: MDLONG(10/01/2023)
+     */
+    setRoleNameForUser() {
+      try {
+        let users = structuredClone(this.users)
+        users.forEach((user) => this.setRoleNames(user));
+        return users
+      } catch (error) {
+        console.log(error);
+      }
+    },
+
+    /**
+     * Lấy tên vai trò
+     * Author: MDLONG(10/01/2023)
+     */
+    setRoleNames(user) {
+      user.RoleNames = this.roles
+        .filter((role) => user.RoleIDs.includes(role.RoleID))
+        .map((role) => role.RoleName)
+        .join("; ");
+    },
+
+    focusFirstInput() {
+      try {
+        console.log(
+          this.$refs.userField[0].$el.querySelector(".UserCode").focus()
+        );
+        // this.$el.querySelector('.UserCode')?.focus()
+      } catch (error) {
+        console.log(error);
+      }
     },
   },
   created() {

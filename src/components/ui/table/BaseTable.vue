@@ -11,7 +11,7 @@
       @row-prepared="onRowPrepared"
       :hover-state-enabled="true"
       :column-auto-width="true"
-      
+      :loadPanel="{enabled: false}"
     >
       <DxColumn
         v-for="(column, index) in columns"
@@ -23,15 +23,17 @@
         :height="48"
         :data-type="column.dataType"
         v-model:visible="column.visible"
-        
       />
       <DxColumn class="row-action" :width="96" cell-template="button-group">
       </DxColumn>
 
+      <DxPaging :enabled="false"/>
       <!-- <DxScrolling column-rendering-mode="virtual" mode="infinite" /> -->
-
-      <DxPaging :page-size="10" :enabled="false" />
-
+      <DxColumnChooser
+            :enabled="false"
+            mode="select"
+      />
+      
       <template #button-group="{data}">
         <div class="flex-m button-group">
           <base-button
@@ -55,7 +57,7 @@
 
       <template #title-tooltip="{ data }">
         <div class="flex-m">
-          <div :title="data.displayValue" class="wrap-text">
+          <div :title="data.displayValue" class="wrap-text text-three-dots">
             {{ data.displayValue }}
           </div>
         </div>
@@ -63,12 +65,13 @@
 
       <template #status-cell="{ data }">
         <div class="flex-m">
-          <div :title="getStatus(data.displayValue).text" class="wrap-text flex-c-m">
+          <div :title="getStatus(data.displayValue).text" class="wrap-text text-three-dots flex-c-m">
             <span class="dot" :class="getStatus(data.displayValue).iconClass"></span>
-            <span :class="getStatus(data.displayValue).class">{{ getStatus(data.displayValue).text }}</span>
+            <span class="text-three-dots" :class="getStatus(data.displayValue).class">{{ getStatus(data.displayValue).text }}</span>
           </div>
         </div>
       </template>
+
     </DxDataGrid>
   </div>
 </template>
@@ -121,6 +124,11 @@ export default {
      */
     loadData() {},
 
+    /**
+     * Xử lý ô trong bảng
+     * Author: MDLONG(27/12/2022)
+     * @param {event} e 
+     */
     onCellPrepared(e) {
       if (e.rowType === "header") {
         e.cellElement.classList.add("table-header");
@@ -131,16 +139,31 @@ export default {
       }
     },
 
+    /**
+     * Xử lý hàng trong bảng
+     * Author: MDLONG(27/12/2022)
+     * @param {event} e 
+     */
     onRowPrepared(e) {
       e.rowElement.classList.add("custom-row");
       // e.cells[e.cells.length - 1].classList.add("row-action")
     },
 
+    /**
+     * Sự kiện sửa 
+     * Author: MDLONG(27/12/2022)
+     * @param {*} data 
+     */
     editRow(data){
       this.$emit("editRow", data.data)
       // console.log(data.data)
     },
     
+    /**
+     * Sự kiện xóa
+     * Author: MDLONG(27/12/2022)
+     * @param {*} data 
+     */
     deleteRow(data){
       this.$emit("deleteRow", data.data)
       // console.log(data.data)

@@ -77,6 +77,11 @@ export default {
   },
   methods: {
 
+    /**
+     * Validate dữ liệu
+     * Author: MDLONG(31/12/2023)
+     * @param {*} e 
+     */
     validate() {
       try {
         this.errorMessage = "";
@@ -96,6 +101,11 @@ export default {
       return this.errorMessage;
     },
 
+    /**
+     * Xử lý khi dữ liệu thay đổi
+     * Author: MDLONG(31/12/2023)
+     * @param {*} e 
+     */
     valueChanged(e) {
       this.selectedValue = e
       this.isValid = true
@@ -104,16 +114,22 @@ export default {
 
     /**
      * Kiểm tra để trống
-     * Author: MDLONG(30/10/2022)
+     * Author: MDLONG(31/12/2022)
      * @param {*} event
      */
      checkRequired(message) {
+      let isValid = false
       let value = this.selectedValue;
       if (value) {
-        return true;
+        if(value.hasOwnProperty('previousValue')){
+          isValid = value.value? true : false;
+        }else{
+          isValid = true
+        }
       }
-      this.errorMessage = message;
-      return false;
+      if(!isValid)
+        this.errorMessage = message;
+      return isValid;
     },
   },
 };
