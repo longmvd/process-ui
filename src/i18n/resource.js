@@ -27,6 +27,7 @@ const Title = {
   CLOSE: "Đóng",
   DUPLICATED_USER_CODE: "Mã trùng: ",
   DUPLICATED_EMAIL: "Email trùng: ",
+
 };
 
 const NavbarItem = [
@@ -81,7 +82,7 @@ const UserColumn = [
     caption: "Mã nhân viên",
     text: "Mã nhân viên",
     cellTemplate: "title-tooltip",
-    visible: true,
+    isVisible: true,
   },
   {
     id: 2,
@@ -91,7 +92,7 @@ const UserColumn = [
     caption: "Họ và tên",
     text: "Họ và tên",
     cellTemplate: "avatar-cell",
-    visible: true,
+    isVisible: true,
 
   },
   {
@@ -102,7 +103,7 @@ const UserColumn = [
     caption: "Phòng ban",
     text: "Phòng ban",
     cellTemplate: "title-tooltip",
-    visible: true,
+    isVisible: true,
 
   },
   {
@@ -113,7 +114,7 @@ const UserColumn = [
     caption: "Vị trí công việc",
     text: "Vị trí công việc",
     cellTemplate: "title-tooltip",
-    visible: true,
+    isVisible: true,
 
   },
   {
@@ -124,7 +125,7 @@ const UserColumn = [
     caption: "Email",
     text: "Email",
     cellTemplate: "title-tooltip",
-    visible: true,
+    isVisible: true,
 
   },
   {
@@ -135,7 +136,7 @@ const UserColumn = [
     caption: "Vai trò",
     text: "Vai trò",
     cellTemplate: "title-tooltip",
-    visible: true,
+    isVisible: true,
 
   },
   {
@@ -147,7 +148,7 @@ const UserColumn = [
     dataType: "string",
     text: "Trạng thái",
     cellTemplate: "status-cell",
-    visible: true,
+    isVisible: true,
 
   },
 ]
@@ -259,7 +260,10 @@ const Message = {
   EDIT_FAILED: "Sửa thất bại.",
   DETAILS: "Chi tiết: ",
   SERVER_ERROR: "Có lỗi xảy ra, vui lòng liên hệ Misa.",
-  COMING_SOON: "Tính năng đang phát triển."
+  COMING_SOON: "Tính năng đang phát triển.",
+  DUPLICATED_VALUE: "Gía trị trùng.",
+  TRY_AGAIN: "Vui lòng thử lại sau."
+
 }
 
 // [

@@ -3,7 +3,9 @@
     <div class="page-container">
       <div class="content__header" id="content-header">
         <div class="content__header--left">
-          <div class="page-title">{{ Title.USER }}</div>
+          <div @click="log(tempColumn)" class="page-title">
+            {{ Title.USER }}
+          </div>
         </div>
         <div class="content__header--right">
           <base-button
@@ -107,40 +109,45 @@
                 <main>
                   <div class="list-group-wrap list-content">
                     <DxList
-                      :data-source="userColumn"
+                      :data-source="tempColumn"
                       :noDataText="Title.NO_DATA"
-                      :show-selection-controls="true"
                       :repaint-changes-only="true"
                       v-model:selected-item-keys="selectedColumns"
                       :search-enabled="true"
                       :search-expr="['caption']"
                       display-expr="caption"
-                      value-expr="id"
-                      @item-reordered="onItemReordered"
+                      value-expr="visible"
                       key-expr="id"
                       item-template="table-list"
                       placeholder="Tìm kiếm"
+                      :height="280"
+                      ref="SettingColumn"
                     >
                       <DxSearchEditorOptions :placeholder="Title.SEARCH" />
+
                       <DxItemDragging
-                        :data="userColumn"
+                        :on-reorder="onItemReordered"
                         :allow-reordering="true"
-                        :on-drag-end="reorderColumn"
                       />
                       <template #table-list="{ data }">
                         <div class="flex-m cur-point">
                           <input
                             type="checkbox"
-                            class="c1 mgr-4"
-                            :id="'tableColumn-' + data.field"
-                            v-model="data.visible"
+                            class="c1 mgr-8"
+                            :id="'tableColumn-' + data.id"
+                            v-model="data.isVisible"
+                            :disabled="
+                              data.field == 'UserCode' ||
+                              data.field == 'UserName'
+                            "
                           />
                           <label
                             class="flex-1 mgr-4 cur-point"
-                            :for="'tableColumn-' + data.field"
-                            >{{ data.caption }}</label
+                            :for="'tableColumn-' + data.id"
+                            ><span class="mgl-12">{{
+                              data.caption
+                            }}</span></label
                           >
-                          <!-- {{data}} -->
                         </div>
                       </template>
                     </DxList>
@@ -149,10 +156,13 @@
                 <footer>
                   <div class="command-wrap">
                     <base-button
+                      @click="restoreColumn"
+                      id="get-default"
                       buttonClass="btn--extra flex-m fw-500 mgr-12 pad-0-8"
                       :components="[{ content: Title.RESTORE_DEFAULT }]"
                     />
                     <base-button
+                      id="apply-setting"
                       @click="applyNewOrder"
                       buttonClass="btn--pri flex-m fw-500"
                       :components="[{ content: Title.APPLY }]"
@@ -249,20 +259,19 @@ import { DxPopup, DxPosition } from "devextreme-vue/popup";
 import { DxPopover } from "devextreme-vue/popover";
 import DxList, {
   DxItemDragging,
+  DxItem,
   DxSearchEditorOptions,
 } from "devextreme-vue/list";
 import { DxTagBox } from "devextreme-vue/tag-box";
 import { DxSelectBox } from "devextreme-vue/select-box";
 import { DxToast } from "devextreme-vue/toast";
 import { Message, Title, UserColumn } from "@/i18n";
-import { handleResponse } from "@/utils";
 import BaseLoading from "@/components/ui/loading/BaseLoading.vue";
 import BaseButton from "@/components/ui/button/BaseButton.vue";
 import BaseInput from "@/components/ui/input/BaseInput.vue";
 import BaseTable from "@/components/ui/table/BaseTable.vue";
 import BaseCombobox from "@/components/ui/combobox/BaseCombobox.vue";
 import AddUserPopup from "@/components/ui/popup/AddUserPopup.vue";
-import MsCheckbox from "@/components/ui/input/MsCheckbox.vue";
 import EditUserPopup from "@/components/ui/popup/EditUserPopup.vue";
 import MessagePopup from "@/components/ui/popup/MessagePopup.vue";
 import BaseSelectBox from "../components/ui/combobox/BaseSelectBox.vue";
@@ -282,13 +291,13 @@ export default {
     DxPosition,
     DxList,
     DxItemDragging,
+    DxItem,
     DxSearchEditorOptions,
     DxTagBox,
     DxSelectBox,
     DxToast,
     BaseCombobox,
     AddUserPopup,
-    MsCheckbox,
     BaseSelectBox,
     BaseTagBox,
 
@@ -297,6 +306,10 @@ export default {
     MessagePopup,
   },
   computed: {
+    /**
+     * Bắt đầu từ
+     * Author: MDLONG(02/01/2023)
+     */
     startFrom() {
       try {
         return this.users?.length == 0
@@ -308,6 +321,10 @@ export default {
       }
     },
 
+    /**
+     * Kết thúc tại
+     * Author: MDLONG(02/01/2023)
+     */
     endAt() {
       try {
         return this.paging.PageNumber * this.paging.PageSize >
@@ -319,7 +336,12 @@ export default {
         return 0;
       }
     },
+
+    SettingColumn() {
+      return this.$refs.SettingColumn.instance;
+    },
   },
+
   data() {
     return {
       Title,
@@ -336,7 +358,6 @@ export default {
         text: "Thành công",
       },
 
-      handleResponse,
       users: [],
       jobPositions: [],
       roles: [],
@@ -355,9 +376,9 @@ export default {
         Status: 1,
       },
       selectedColumns: [],
-
-      userColumn: [...UserColumn],
-      tempColumn: [...UserColumn],
+      userColumn: null,
+      tempColumn: null,
+      defaultColumn: null,
       paging: {
         PageSize: 15,
         PageNumber: 1,
@@ -370,53 +391,7 @@ export default {
         Desc: true,
       },
 
-      conditionQueries: [
-        [
-          {
-            Relationship: "AND",
-            Column: "",
-            Operator: "",
-            Value: "",
-            SubQuery: [
-              {
-                Relationship: null,
-                Column: "UserName",
-                Operator: "LIKE",
-                Value: "%long%",
-                SubQuery: null,
-              },
-              {
-                Relationship: "OR",
-                Column: "Email",
-                Operator: "LIKE",
-                Value: "%nvcuong1%",
-                SubQuery: null,
-              },
-            ],
-          },
-          {
-            Relationship: "AND",
-            Column: "d.DepartmentID",
-            Operator: "=",
-            Value: null,
-            SubQuery: null,
-          },
-          {
-            Relationship: "AND",
-            Column: "j.JobPositionID",
-            Operator: "IN",
-            Value: "57cdf8c4-47e3-5560-7e41-c1ec321fe728",
-            SubQuery: null,
-          },
-          {
-            Relationship: "AND",
-            Column: "r.RoleID",
-            Operator: "=",
-            Value: "2b5f15b9-17d9-57e8-1e4a-aea48a10ed18",
-            SubQuery: null,
-          },
-        ],
-      ],
+      conditionQueries: [],
 
       pageSizeOptionConfig: {
         id: "paging",
@@ -438,6 +413,7 @@ export default {
       },
     };
   },
+
   methods: {
     /**
      * Bật tắt cài đặt bảng
@@ -472,7 +448,7 @@ export default {
       try {
         this.departments = await request.getAllDepartment();
         this.departments?.unshift({
-          DepartmentID: "",
+          DepartmentID: null,
           DepartmentName: Title.SELECT_DEPARTMENT,
         });
       } catch (error) {
@@ -486,7 +462,6 @@ export default {
      */
     async loadRoles(setDefault = true) {
       try {
-        debugger
         this.roles = await request.getAllRole();
         if (setDefault)
           this.roles?.unshift({ RoleID: null, RoleName: Title.ALL });
@@ -502,10 +477,6 @@ export default {
     async loadUsers(option) {
       try {
         this.isLoading = true;
-        // if (this.timeOutLoading) clearTimeout(this.timeOutLoading);
-        // this.timeOutLoading = setTimeout(() => {
-        //   let count;
-        // }, 5000000000);
         let sendObject;
         if (option) {
           sendObject = this.standardizeFilter(option);
@@ -515,7 +486,6 @@ export default {
         let data = await request.getUserByFilter(sendObject);
         this.isLoading = false;
         //Xử lý ẩn loading
-        
 
         this.users = data?.Data;
         this.paging.TotalRecord = data?.TotalRecord;
@@ -591,15 +561,10 @@ export default {
       }
     },
 
-    onItemReordered(e) {
-      const itemData = e.itemData;
-      const itemDomNode = e.itemElement;
-      const from = e.fromIndex;
-      const to = e.toIndex;
-      console.log(e);
-      console.log(this.columns);
-      // Handler of the "itemReordered" event
-    },
+    /**
+     * Lấy cột
+     * Author: MDLONG(01/01/2022)
+     */
     getColumn() {
       console.log(this.selectedColumns);
       console.log(this.columns);
@@ -675,7 +640,7 @@ export default {
             });
             break;
           case StatusCode.BAD_REQUEST:
-            handleAddUserBadRequest(data, messagePopup);
+            handleAddUserBadRequest(data, messagePopup, addUserPopup);
             break;
           case StatusCode.SERVER_INTERNAL_ERROR:
             messagePopup.show({
@@ -702,7 +667,7 @@ export default {
        * @param {*} data
        * @param {*} messagePopup
        */
-      function handleAddUserBadRequest(data, messagePopup) {
+      function handleAddUserBadRequest(data, messagePopup, addUserPopup) {
         let error = data;
         let errorCode = error.ErrorCode;
         let message = error.UserMsg;
@@ -727,6 +692,26 @@ export default {
               primaryButton: {
                 title: Title.CLOSE,
                 class: " ",
+                action: handleErrorInput(
+                  moreInfo.UserCode || [],
+                  moreInfo.Email || [],
+                  addUserPopup.distinctField,
+                  messagePopup
+                ),
+              },
+              extraButton: {
+                isShow: false,
+              },
+            });
+            break;
+          case ErrorCode.Failed:
+            addUserPopup.hide();
+            messagePopup.show({
+              title: message,
+              content: Message.TRY_AGAIN,
+              primaryButton: {
+                title: Title.CLOSE,
+                class: " ",
                 action: messagePopup.hide,
               },
               extraButton: {
@@ -735,6 +720,60 @@ export default {
             });
             break;
         }
+      }
+
+      /**
+       * Xử lý ô lỗi
+       * Author: MDLONG(04/01/2023)
+       */
+      function handleErrorInput(
+        duplicatedUserCode,
+        duplicatedEmail,
+        fields,
+        popup
+      ) {
+        return () => {
+          try {
+            popup.hide();
+            let duplicatedValue = [...duplicatedUserCode, ...duplicatedEmail];
+            let userCodeFrequency = {};
+            let emailFrequency = {};
+            let focusFirst = true;
+            //gán cho tần suất usercode và email đều = 2
+            for (let value of duplicatedUserCode) {
+              userCodeFrequency[value] = 2;
+            }
+
+            for (let value of duplicatedEmail) {
+              emailFrequency[value] = 2;
+            }
+
+            for (let field of fields) {
+              // nếu các trường input chứa giá trị bị trùng thì gọi hàm checkDuplicated
+              if (duplicatedValue.includes(field.value)) {
+                if (field.input.classList.contains("UserCode")) {
+                  field.checkDuplicated(
+                    Message.DUPLICATE_USER_CODE,
+                    userCodeFrequency
+                  );
+                } else if (field.input.classList.contains("Email")) {
+                  field.checkDuplicated(
+                    Message.DUPLICATE_EMAIL,
+                    emailFrequency
+                  );
+                }
+                if (!field.isValid) {
+                  if (focusFirst) {
+                    field.focus();
+                    focusFirst = false;
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        };
       }
     },
 
@@ -783,17 +822,7 @@ export default {
           popup.togglePopup();
           let response = await request.deleteUser(user);
           let status = response.status;
-          switch (status) {
-            case StatusCode.OK:
-              this.showMessage({
-                type: "success",
-                text: Message.DELETE_SUCCESS,
-              });
-              break;
-            case StatusCode.BAD_REQUEST:
-              this.showMessage({ type: "error", text: Message.DELETE_FAILED });
-              break;
-          }
+          this.handleStatusResponse(status, 'DELETE');
           await this.loadUsers();
           if (this.users.length == 0) {
             if (this.paging.PageNumber != 1) {
@@ -820,20 +849,7 @@ export default {
             this.updateUserRole(popup.selectedRoleIDs);
             let response = await request.editUser(user);
             let status = response.status;
-            switch (status) {
-              case StatusCode.OK:
-                this.showMessage({
-                  type: "success",
-                  text: Message.EDIT_SUCCESS,
-                });
-                break;
-              case StatusCode.BAD_REQUEST:
-                this.showMessage({
-                  type: "error",
-                  text: Message.EDIT_FAILED,
-                });
-                break;
-            }
+            this.handleStatusResponse(status, 'EDIT');
             popup.togglePopup();
             this.loadUsers();
           }
@@ -841,6 +857,25 @@ export default {
           console.log(error);
         }
       };
+    },
+
+    /**
+     * Xử lý hiển thị message khi nhận response
+     * Author: MDLONG(04/01/2023)
+     * @param {*} status
+     */
+    handleStatusResponse(status, mode) {
+      switch (status) {
+        case StatusCode.OK:
+          this.showMessage({ type: "success", text: Message[`${mode}_SUCCESS`]});
+          break;
+        case StatusCode.BAD_REQUEST:
+          this.showMessage({ type: "error", text: Message[`${mode}_FAILED`] });
+          break;
+        case StatusCode.SERVER_INTERNAL_ERROR:
+          this.showMessage({ type: "error", text: Message.SERVER_ERROR });
+          break;
+      }
     },
 
     /**
@@ -938,32 +973,98 @@ export default {
      * Áp dụng cột mới
      */
     applyNewOrder() {
-      this.userColumn = [...this.tempColumn];
-      console.log(this.tempColumn);
-      console.log(this.userColumn);
+      this.userColumn = structuredClone(this.tempColumn);
+      this.saveToLocal("userColumn", this.userColumn);
     },
 
-    reorderColumn(e) {
-      try {
-        // let column = this.userColumn;
-        // console.log(column)[
-        //   (this.userColumn[e.fromIndex], this.userColumn[e.toIndex])
-        // ] = [this.userColumn[e.toIndex], this.userColumn[e.fromIndex]];
-        let column = [...this.userColumn];
-        this.swapElements(column, e.fromIndex, e.toIndex);
-        this.tempColumn = column;
-      } catch (error) {
-        console.log(error);
+    restoreColumn() {
+      this.tempColumn = structuredClone(this.defaultColumn);
+      this.SettingColumn.reload();
+      this.applyNewOrder();
+    },
+
+    /**
+     * Lấy thông tin cột từ local storage
+     * Author: MDLONG(06/01/2023)
+     */
+    getUserColumn() {
+      let userColumn = this.getObjectFromLocal("userColumn");
+      if (!userColumn) {
+        this.saveToLocal("userColumn", UserColumn);
+        this.getUserColumn();
+      }
+      this.userColumn = userColumn;
+      this.tempColumn = structuredClone(userColumn);
+    },
+
+    /**
+     * Khôi phục mặc định
+     */
+    getDefaultColumn() {
+      const defaultColumn = localStorage.getItem("defaultColumn");
+      if (defaultColumn) {
+        this.defaultColumn = JSON.parse(defaultColumn);
+      } else {
+        this.saveToLocal("defaultColumn", UserColumn);
+        this.getDefaultColumn();
+      }
+    },
+
+    /**
+     * Lưu đối tượng vào local storage
+     * @param {String} name
+     * @param {Object} object
+     */
+    saveToLocal(name, object) {
+      localStorage.setItem(name, JSON.stringify(object));
+    },
+
+    /**
+     * Lấy đối tượng từ local storage
+     * @param {String} name
+     * @param {Object} object
+     */
+    getObjectFromLocal(name) {
+      const stringObj = localStorage.getItem(name);
+      let localObj = null;
+      if (stringObj) {
+        localObj = JSON.parse(stringObj);
+      }
+      return localObj;
+    },
+
+    /**
+     * Xử lý thay đổi cột
+     * @param {*} e 
+     */
+    onItemReordered(e) {
+      if (
+        e.fromIndex === 0 ||
+        e.fromIndex === 1 ||
+        e.toIndex === 0 ||
+        e.toIndex === 1
+      ) {
+        return;
+      } else {
+        this.reorderColumn(e);
+        this.SettingColumn.reload();
       }
     },
     /**
-     * đổi vị trí phần tử trong mảng
-     * @param {*} arr
-     * @param {*} i1
-     * @param {*} i2
+     * Thay đổi thứ tự cột
+     * @param {*} e
      */
-    swapElements(arr, i1, i2) {
-      [arr[i1], arr[i2]] = [arr[i2], arr[i1]];
+    reorderColumn(e) {
+      try {
+        // lưu lại cột cần di chuyển
+        let moveColumn = this.tempColumn[e.fromIndex];
+        //xóa cột muốn di chuyển ra khỏi mảng
+        this.tempColumn.splice(e.fromIndex, 1);
+        //thêm cột lại vào mảng ở vị trí cần
+        this.tempColumn.splice(e.toIndex, 0, moveColumn);
+      } catch (error) {
+        console.log(error);
+      }
     },
 
     /**
@@ -977,7 +1078,7 @@ export default {
           PageNumber: paging.PageNumber,
           PageSize: paging.PageSize,
           SortColumn: paging.SortColumn,
-          Desc: paging.Desc
+          Desc: paging.Desc,
         };
         let conditionQueries = [];
         for (let [key, value] of Object.entries(paging)) {
@@ -1004,6 +1105,13 @@ export default {
                     {
                       Relationship: "OR",
                       Column: "Email",
+                      Operator: "LIKE",
+                      Value: value,
+                      SubQuery: null,
+                    },
+                    {
+                      Relationship: "OR",
+                      Column: "RoleNames",
                       Operator: "LIKE",
                       Value: value,
                       SubQuery: null,
@@ -1041,17 +1149,24 @@ export default {
             }
           }
         }
-        
+
         return {
           ...sendObject,
           conditionQueries,
-        }
+        };
       } catch (error) {
         console.log(error);
       }
     },
+
+    log() {
+      console.log(this.tempColumn);
+    },
   },
+
   created() {
+    this.getUserColumn();
+    this.getDefaultColumn();
     this.loadData();
   },
 };
@@ -1135,7 +1250,14 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 16px 16px 12px;
 }
+
+.list-group-wrap .dx-list {
+  border: none;
+  padding: 0 16px 12px;
+}
+
 .setting-title {
   font-weight: 700;
   font-size: 18px;
@@ -1159,6 +1281,7 @@ export default {
   min-height: 60px;
   height: 60px;
   padding: 12px 20px 12px 0;
+  border-radius: 0 0 4px 4px;
 }
 
 .list-group-wrap {
@@ -1206,6 +1329,13 @@ export default {
   max-width: 10px;
 }
 
+.dx-list-item-after-bag.dx-list-reorder-handle-container:nth-child(3) {
+  visibility: hidden;
+}
+.dx-item:nth-child(1) .dx-list-item-after-bag.dx-list-reorder-handle-container,
+.dx-item:nth-child(2) .dx-list-item-after-bag.dx-list-reorder-handle-container {
+  visibility: hidden;
+}
 .list-group-wrap {
   padding-left: 0px;
 }

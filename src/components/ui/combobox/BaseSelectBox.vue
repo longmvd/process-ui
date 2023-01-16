@@ -27,20 +27,22 @@
         :noDataText="noDataText"
         @value-changed="valueChanged"
         @focusOut="validate"
-        ref="selectBox"
+        ref="selectBoxRef"
       />
     </div>
     <span v-if="!isValid" class="err-message">{{ errorMessage }}</span>
   </div>
 </template>
 <script>
-/* eslint-disable */ 
+/* eslint-disable */
 import { DxSelectBox } from "devextreme-vue/select-box";
 export default {
   name: "BaseSelectBox",
   props: {
     dataSource: {
-      type: Array,Object,String
+      type: Array,
+      Object,
+      String,
     },
     iconClass: {
       type: String,
@@ -56,31 +58,42 @@ export default {
     labelClass: String,
     tooltip: String,
     inputWrapperClass: String,
-    label:String,
-    width:String,
-    noDataText:String,
+    label: String,
+    width: String,
+    noDataText: String,
     rules: Array,
     value: [Object, String],
-    selectedItem: [Object, String]
+    selectedItem: [Object, String],
   },
   components: {
     DxSelectBox,
   },
   emits: ["valueChanged"],
+  computed: {},
   data() {
     return {
       isValid: true,
       selectedValue: null,
-      errorMessage:"",
-      
+      errorMessage: "",
     };
   },
+  computed: {
+    selectBox: function () {
+      return this.$refs.selectBoxRef.instance;
+    },
+  },
   methods: {
-
+    /**
+     * Focus select box
+     * Author: MDLONG(04/01/2023)
+     */
+    focus() {
+      this.selectBox.focus();
+    },
     /**
      * Validate dữ liệu
      * Author: MDLONG(31/12/2023)
-     * @param {*} e 
+     * @param {*} e
      */
     validate() {
       try {
@@ -104,11 +117,11 @@ export default {
     /**
      * Xử lý khi dữ liệu thay đổi
      * Author: MDLONG(31/12/2023)
-     * @param {*} e 
+     * @param {*} e
      */
     valueChanged(e) {
-      this.selectedValue = e
-      this.isValid = true
+      this.selectedValue = e;
+      this.isValid = true;
       this.$emit("valueChanged", e);
     },
 
@@ -117,18 +130,17 @@ export default {
      * Author: MDLONG(31/12/2022)
      * @param {*} event
      */
-     checkRequired(message) {
-      let isValid = false
+    checkRequired(message) {
+      let isValid = false;
       let value = this.selectedValue;
       if (value) {
-        if(value.hasOwnProperty('previousValue')){
-          isValid = value.value? true : false;
-        }else{
-          isValid = true
+        if (value.hasOwnProperty("previousValue")) {
+          isValid = value.value ? true : false;
+        } else {
+          isValid = true;
         }
       }
-      if(!isValid)
-        this.errorMessage = message;
+      if (!isValid) this.errorMessage = message;
       return isValid;
     },
   },
@@ -140,7 +152,7 @@ export default {
   position: relative;
   padding-left: 28px;
 }
-.el-wrapper.error .dx-dropdowneditor{
-    border-color: var(--error-color)!important
+.el-wrapper.error .dx-dropdowneditor {
+  border-color: var(--error-color) !important;
 }
 </style>

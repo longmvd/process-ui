@@ -32,6 +32,7 @@
         @focusOut="validate"
         @value-changed="valueChanged"
         :multiline="true"
+        ref="tagBoxRef"
       />
       <!-- <i class="icon-24 dx-dropdowneditor-icon drop-down-icon"></i> -->
     </div>
@@ -81,7 +82,20 @@ export default {
       selectedValue: null,
     };
   },
+  computed: {
+    tagBox: function () {
+      return this.$refs.tagBoxRef.instance;
+    },
+  },
   methods: {
+    /**
+     * Focus select box
+     * Author: MDLONG(04/01/2023)
+     */
+    focus() {
+      this.tagBox.focus();
+    },
+
     /**
      * Validate
      *  Author: MDLONG(30/12/2022)

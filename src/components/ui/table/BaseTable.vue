@@ -11,10 +11,12 @@
       @row-prepared="onRowPrepared"
       :hover-state-enabled="true"
       :column-auto-width="true"
-      :loadPanel="{enabled: false}"
+      :onCellClick="onCellClick"
+      :loadPanel="{ enabled: false }"
     >
       <DxColumn
         v-for="(column, index) in columns"
+        :allow-sorting="false"
         :key="index"
         :min-width="column.minWidth"
         :data-field="column.field"
@@ -22,19 +24,16 @@
         :cell-template="column.cellTemplate"
         :height="48"
         :data-type="column.dataType"
-        v-model:visible="column.visible"
+        v-model:visible="column.isVisible"
       />
       <DxColumn class="row-action" :width="96" cell-template="button-group">
       </DxColumn>
 
-      <DxPaging :enabled="false"/>
+      <DxPaging :enabled="false" />
       <!-- <DxScrolling column-rendering-mode="virtual" mode="infinite" /> -->
-      <DxColumnChooser
-            :enabled="false"
-            mode="select"
-      />
-      
-      <template #button-group="{data}">
+      <DxColumnChooser :enabled="false" mode="select" />
+
+      <template #button-group="{ data }">
         <div class="flex-m button-group">
           <base-button
             @click="editRow(data)"
@@ -50,7 +49,10 @@
       </template>
       <template #avatar-cell="{ data }">
         <div class="flex-m">
-          <base-avatar class="mgr-12" :username="data.displayValue"></base-avatar>
+          <base-avatar
+            class="mgr-12"
+            :username="data.displayValue"
+          ></base-avatar>
           <div :title="data.displayValue">{{ data.displayValue }}</div>
         </div>
       </template>
@@ -65,13 +67,22 @@
 
       <template #status-cell="{ data }">
         <div class="flex-m">
-          <div :title="getStatus(data.displayValue).text" class="wrap-text text-three-dots flex-c-m">
-            <span class="dot" :class="getStatus(data.displayValue).iconClass"></span>
-            <span class="text-three-dots" :class="getStatus(data.displayValue).class">{{ getStatus(data.displayValue).text }}</span>
+          <div
+            :title="getStatus(data.displayValue).text"
+            class="wrap-text text-three-dots flex-c-m"
+          >
+            <span
+              class="dot"
+              :class="getStatus(data.displayValue).iconClass"
+            ></span>
+            <span
+              class="text-three-dots"
+              :class="getStatus(data.displayValue).class"
+              >{{ getStatus(data.displayValue).text }}</span
+            >
           </div>
         </div>
       </template>
-
     </DxDataGrid>
   </div>
 </template>
@@ -89,7 +100,7 @@ import {
 } from "devextreme-vue/data-grid";
 import BaseAvatar from "../avatar/BaseAvatar.vue";
 import BaseButton from "../button/BaseButton.vue";
-import {getStatus} from "@/utils"
+import { getStatus } from "@/utils";
 import { Title } from "@/i18n";
 export default {
   name: "BaseTable",
@@ -109,76 +120,83 @@ export default {
     DxColumnChooser,
     DxButton,
   },
-  emits:["deleteRow", "editRow"],
+  emits: ["deleteRow", "editRow"],
   data() {
     return {
       Title,
       isEmailVisible: false,
-      
     };
   },
   methods: {
-    /**
-     * Lấy dữ liệu từ API
-     * Author: MDLONG(25/12/2022)
-     */
-    loadData() {},
 
     /**
      * Xử lý ô trong bảng
      * Author: MDLONG(27/12/2022)
-     * @param {event} e 
+     * @param {event} e
      */
     onCellPrepared(e) {
-      if (e.rowType === "header") {
-        e.cellElement.classList.add("table-header");
+      try{
+        if (e.rowType === "header") {
+          e.cellElement.classList.add("table-header");
+        }
+        e.cellElement.classList.add("custom-cell");
+        if (e.columnIndex === e?.row?.cells?.length - 1) {
+          e.cellElement.classList.add("row-action");
+        }
+
+      }catch(error){
+        console.log(error)
       }
-      e.cellElement.classList.add("custom-cell");
-      if (e.columnIndex === e?.row?.cells?.length - 1) {
-        e.cellElement.classList.add("row-action");
+    },
+
+    /**
+     * Click header table
+     * @param {*} e 
+     */
+    onCellClick(e){
+      if (e.rowType == "header" && e.columnIndex < this.columns.length) {
+        this.showIcon(e);
+        this.$emit(
+          "onClickHeaderTable",
+          this.columns[e.columnIndex].field,
+          this.showUp > -1 ? Enum.TypeSort.ASC : Enum.TypeSort.DESC
+        );
       }
     },
 
     /**
      * Xử lý hàng trong bảng
      * Author: MDLONG(27/12/2022)
-     * @param {event} e 
+     * @param {event} e
      */
     onRowPrepared(e) {
       e.rowElement.classList.add("custom-row");
-      // e.cells[e.cells.length - 1].classList.add("row-action")
     },
 
     /**
-     * Sự kiện sửa 
+     * Sự kiện sửa
      * Author: MDLONG(27/12/2022)
-     * @param {*} data 
+     * @param {*} data
      */
-    editRow(data){
-      this.$emit("editRow", data.data)
-      // console.log(data.data)
+    editRow(data) {
+      this.$emit("editRow", data.data);
     },
-    
+
     /**
      * Sự kiện xóa
      * Author: MDLONG(27/12/2022)
-     * @param {*} data 
+     * @param {*} data
      */
-    deleteRow(data){
-      this.$emit("deleteRow", data.data)
-      // console.log(data.data)
+    deleteRow(data) {
+      this.$emit("deleteRow", data.data);
     },
 
     /**
      * Lấy tên trạng thái
-     * @param {*} status 
+     * @param {*} status
      */
-    getStatus(status){
-      return getStatus(status)
-    },
-
-    log(data) {
-      console.log(data)
+    getStatus(status) {
+      return getStatus(status);
     },
   },
 };
@@ -265,16 +283,16 @@ tr.custom-row.dx-data-row.dx-row.dx-row-lines.dx-state-hover {
 }
 
 .dx-datagrid-nodata {
-    color: #999;
-    font-size: 15px;
+  color: #999;
+  font-size: 15px;
 }
 
 span.dx-datagrid-nodata {
-    width: 155px!important;
-    background: url(@/assets/img/EmptyRC1.3c8bf4c8.svg) -692px 16px no-repeat!important;
-    display: flex;
-    flex-direction: column-reverse;
-    align-items: center;
-    height: 200px;
+  width: 155px !important;
+  background: url(@/assets/img/EmptyRC1.3c8bf4c8.svg) -692px 16px no-repeat !important;
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  height: 200px;
 }
 </style>

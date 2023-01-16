@@ -98,6 +98,10 @@
                         cLength: LimitLength.EMAIL,
                       },
                       { email: Message.INVALID_EMAIL },
+                      {
+                        duplicated: Message.DUPLICATE_EMAIL,
+                        frequency: emailFrequency,
+                      },
                     ]"
                     ref="userField"
                   ></base-input>
@@ -113,6 +117,10 @@
                           LimitLength.USER_CODE
                         ),
                         cLength: LimitLength.USER_CODE,
+                      },
+                      {
+                        duplicated: Message.DUPLICATE_USER_CODE,
+                        frequency: userCodeFrequency,
                       },
                     ]"
                     :inputClass="field"
@@ -196,7 +204,6 @@ import BaseInput from "../input/BaseInput.vue";
 import BaseSelectBox from "../combobox/BaseSelectBox.vue";
 import BaseTagBox from "../combobox/BaseTagBox";
 import * as request from "@/services";
-
 export default {
   components: {
     BaseButton,
@@ -213,29 +220,29 @@ export default {
   },
   name: "AddUserPopup",
   props: {},
+  computed: {
+    userField() {
+      return this.$refs.userField;
+    },
+  },
   data() {
     return {
       isShow: false,
       isValid: true,
+      focusFirstCode: true,
       focusElement: null,
       Title,
       Message,
       UserColumnAdd,
       UserStatus,
       LimitLength,
+      distinctField: [],
+      emailFrequency: {},
+      userCodeFrequency: {},
       jobPositions: [],
       departments: [],
-      users: [
-        {
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
-          DepartmentID: "",
-          JobPositionID: "",
-          Email: "maidailong@gmail.com",
-          RoleIDs: [],
-          Status: 1,
-        },
-      ],
+      users: [],
+      newUserCode: "",
       roles: [],
     };
   },
@@ -249,7 +256,6 @@ export default {
     togglePopup() {
       this.initForm();
       this.isShow = !this.isShow;
-      // this.focusFirstInput()
     },
 
     /**
@@ -270,8 +276,10 @@ export default {
      * Author: MDLONG(27/12/2022)
      */
     addNewRow() {
+      const userFieldNum = 7;
+      const focusIndex = this.users.length * userFieldNum;
       this.users.push({
-        UserCode: "",
+        UserCode: this.generateNewUserCode(),
         UserName: "",
         DepartmentID: "",
         JobPositionID: "",
@@ -279,6 +287,7 @@ export default {
         RoleIDs: [],
         Status: 1,
       });
+      this.focusInput(focusIndex);
     },
 
     /**
@@ -289,6 +298,7 @@ export default {
       this.roles = await request.getAllRole();
       this.jobPositions = await request.getAllJobPosition();
       this.departments = await request.getAllDepartment();
+      this.newUserCode = await request.getNewUserCode();
     },
 
     /**
@@ -298,7 +308,7 @@ export default {
     async saveData() {
       this.validate();
       if (this.isValid) {
-        let users = this.setRoleNameForUser()
+        let users = this.setRoleNameForUser();
         let response = await request.addUser(users);
         this.$emit("addUsers", response);
       }
@@ -313,63 +323,59 @@ export default {
         this.isValid = true;
         let focusFirst = true;
         let distinctField = [];
+        let emailFields = [];
+        let userCodeFields = [];
 
         //vừa validate vừa lấy ra các trường không cho phép trùng giá trị
-        for (let field of this.$refs.userField) {
+        for (let field of this.userField) {
           field.validate();
-          let input = field.$el.querySelector("input");
-          if (input.type == "hidden") {
-            input = field.$el.querySelectorAll("input")[1];
-          }
+
           //lấy ra trường usercode và email
-          if (
-            field.$el.querySelector(".UserCode") ||
-            field.$el.querySelector(".Email")
-          ) {
-            distinctField.push(field);
+          if (field.input) {
+            // nếu trường nào là input
+            if (this.isUserCodeField(field)) {
+              userCodeFields.push(field);
+              distinctField.push(field);
+            } else if (this.isEmailField(field)) {
+              emailFields.push(field);
+              distinctField.push(field);
+            }
           }
+
           // focus trường lỗi
           if (!field.isValid) {
             this.isValid = false;
             if (focusFirst) {
-              // console.log(input.parentNode.focus())
-              input.focus();
+              field.focus();
               focusFirst = false;
             }
           }
         }
+
         //nếu không có trường nào để trống mới thực hiện validate trùng
         if (this.isValid) {
-          let userCodes = [];
-          let emails = [];
-          //lấy ra thẻ input của field
-          for (let field of distinctField) {
-            let userCodeInput = field.$el.querySelector(".UserCode");
-            let emailInput = field.$el.querySelector(".Email");
-
-            if (userCodeInput) {
-              userCodes.push({
-                element: userCodeInput,
-                value: userCodeInput.value,
-                parent: field,
-              });
+          this.distinctField = distinctField;
+          let userCodeFrequency = this.getFrequency(userCodeFields);
+          let emailFrequency = this.getFrequency(emailFields);
+          for (let field of this.distinctField) {
+            if (this.isUserCodeField(field)) {
+              field.checkDuplicated(
+                Message.DUPLICATE_USER_CODE,
+                userCodeFrequency
+              );
+            } else if (this.isEmailField(field)) {
+              field.checkDuplicated(Message.DUPLICATE_EMAIL, emailFrequency);
             }
-            if (emailInput) {
-              emails.push({
-                element: emailInput,
-                value: emailInput.value,
-                parent: field,
-              });
+
+            if (!field.isValid) {
+              this.isValid = false;
+              if (focusFirst) {
+                // console.log(input.parentNode.focus())
+                field.focus();
+                focusFirst = false;
+              }
             }
           }
-
-          //validate và lấy ra trường lỗi cần focus
-          let validCode = this.checkDuplicate(
-            userCodes,
-            Message.DUPLICATE_USER_CODE
-          );
-          let validEmail = this.checkDuplicate(emails, Message.DUPLICATE_EMAIL);
-          this.isValid = validCode && validEmail;
         }
       } catch (error) {
         console.log(error);
@@ -377,37 +383,41 @@ export default {
     },
 
     /**
-     * Kiểm tra giá trị trùng
-     * Author: MDLONG(28/12/2022)
-     * @param {*} elements
-     * @param {*} message
+     * lấy tần suất xuất hiện
+     * Author: MDLONG(06/01/2022)
+     * @param {*} fields 
      */
-    checkDuplicate(elements, message) {
+    getFrequency(fields) {
       const map = {};
-      // đếm giá trị trùng
-      for (let element of elements) {
-        if (!map[element.value]) {
-          map[element.value] = 1;
-        } else {
-          map[element.value]++;
-        }
-      }
-      let isValid = true;
-      let focusElement = null;
-
-      //biến lưu trường muốn focus
-      for (let element of elements) {
-        if (map[element.value] > 1) {
-          element.parent.errorMessage = message;
-          element.parent.isValid = false;
-          if (!this.focusElement) {
-            focusElement = element.element;
+      try {
+        // đếm giá trị trùng
+        for (let field of fields) {
+          if (!map[field.value]) {
+            map[field.value] = 1;
+          } else {
+            map[field.value]++;
           }
-          isValid = false;
         }
+      } catch (error) {
+        console.log(error);
       }
-      focusElement?.focus();
-      return isValid;
+      return map;
+    },
+
+    /**
+     * Kiểm tra trường là email
+     * @param {*} field
+     */
+    isEmailField(field) {
+      return field.input.classList.contains("Email");
+    },
+
+    /**
+     * trường user code
+     * @param {*} field 
+     */
+    isUserCodeField(field) {
+      return field.input.classList.contains("UserCode");
     },
 
     /**
@@ -436,18 +446,22 @@ export default {
      * Khởi tạo form
      * Author: MDLONG(27/12/2022)
      */
-    initForm() {
+    async initForm() {
+      await this.loadData();
       this.users = [
         {
-          UserCode: "NV02342",
-          UserName: "Mai Đại Long",
+          UserCode: this.newUserCode,
+          UserName: "",
           DepartmentID: "",
           JobPositionID: "",
-          Email: "maidailong@gmail.com",
+          Email: "",
           RoleIDs: [],
           Status: 1,
         },
       ];
+      this.focusInput(0);
+      this.emailFrequency = [];
+      this.userCodeFrequency = [];
     },
 
     /**
@@ -456,9 +470,9 @@ export default {
      */
     setRoleNameForUser() {
       try {
-        let users = structuredClone(this.users)
+        let users = structuredClone(this.users);
         users.forEach((user) => this.setRoleNames(user));
-        return users
+        return users;
       } catch (error) {
         console.log(error);
       }
@@ -475,19 +489,29 @@ export default {
         .join("; ");
     },
 
-    focusFirstInput() {
+    /**
+     * focus vào input
+     * @param {*} indexOfInput -- vị trí của input
+     */
+    focusInput(indexOfInput) {
       try {
-        console.log(
-          this.$refs.userField[0].$el.querySelector(".UserCode").focus()
-        );
-        // this.$el.querySelector('.UserCode')?.focus()
+        this.$nextTick(() => this.$refs.userField[indexOfInput].focus());
       } catch (error) {
         console.log(error);
       }
     },
-  },
-  created() {
-    this.loadData();
+
+    /**
+     * Sinh code mới
+     */
+    generateNewUserCode() {
+      let code = +this.newUserCode.replace(/\D/g, "") + 1 + "";
+      while (code.length < 4) {
+        code = "0" + code;
+      }
+      this.newUserCode = `NV${code}`
+      return this.newUserCode
+    },
   },
 };
 </script>

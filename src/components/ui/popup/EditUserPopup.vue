@@ -40,16 +40,17 @@
               <span class="required">*</span>
             </span>
           </div>
+          <br/>
           <div class="role-wrap">
             <div class="user-role" v-for="role in roles" :key="role.RoleID">
+              <input
+                type="checkbox"
+                class="c1 cur-point"
+                :value="role.RoleID"
+                v-model="selectedRoleIDs"
+                :id="role.RoleID"
+              />
               <label :for="role.RoleID" class="cur-point flex-m h-full">
-                <input
-                  type="checkbox"
-                  class="c1 cur-point"
-                  :value="role.RoleID"
-                  v-model="selectedRoleIDs"
-                  :id="role.RoleID"
-                />
                 <span class="role-label">{{ role.RoleName }}</span>
               </label>
             </div>
@@ -159,6 +160,7 @@ export default {
 };
 </script>
 <style scoped>
+
 .edit-user-popup {
   background: var(--white-color);
   width: 600px;
@@ -187,5 +189,53 @@ export default {
 
 .role-label {
   margin-left: 8px;
+}
+
+
+input[type=checkbox] + label {
+  display: block;
+  cursor: pointer;
+}
+
+input[type=checkbox] {
+  display: none;
+}
+
+input[type=checkbox] + label:before {
+    box-sizing: border-box;
+    content: "\2714";
+    border: 2px solid #686c7b;
+    border-radius: 0.2em;
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    padding-left: 0.22em;
+    padding-bottom: 0.9em;
+    margin-right: 0.2em;
+    vertical-align: bottom;
+    color: transparent;
+    transition: .2s;
+    font-size: 13px;
+}
+
+input[type=checkbox] + label:active:before {
+  transform: scale(0);
+}
+
+input[type=checkbox]:checked + label:before {
+  background-color: #0c9cdd;
+  border: 0.1em solid #0c9cdd;
+  color: #fff;
+}
+
+input[type=checkbox]:disabled + label:before {
+  transform: scale(1);
+  border: 0.1em solid #aaa;
+}
+
+input[type=checkbox]:checked:disabled + label:before {
+  transform: scale(1);
+  opacity: .5;
+  border: 0.1em solid #0c9cdd;
 }
 </style>

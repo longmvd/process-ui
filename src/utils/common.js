@@ -8,22 +8,22 @@ const getStatus = (status) => {
             iconClass: ''
         }
         switch (status) {
-            case Status.NotActivated:
+            case Status.NOT_ACTIVATED:
                 resultStatus.text = "Chưa kích hoạt"
                 resultStatus.class = 'color-blue'
                 resultStatus.iconClass = 'bg-blue'
                 break;
-            case Status.Pending:
+            case Status.PENDING:
                 resultStatus.text = "Chờ xác nhận"
                 resultStatus.class = 'color-orange'
                 resultStatus.iconClass = 'bg-orange'
                 break;
-            case Status.Active:
+            case Status.ACTIVE:
                 resultStatus.text = "Đang hoạt động"
                 resultStatus.class = 'color-green'
                 resultStatus.iconClass = 'bg-green'
                 break;
-            case Status.Inactive:
+            case Status.IN_ACTIVE:
                 resultStatus.text = "Ngừng kích hoạt"
                 resultStatus.class = 'color-unavailable'
                 resultStatus.iconClass = 'bg-unavailable'
@@ -36,7 +36,7 @@ const getStatus = (status) => {
     }
 }
 
-const handleResponse = (response, ok, created, badRequest) => {
+const handleStatus = (response, ok, created, badRequest) => {
 
     try {
         let status = response?.status
@@ -61,4 +61,4 @@ const handleResponse = (response, ok, created, badRequest) => {
     }
 }
 
-export { getStatus, handleResponse }
+export { getStatus, handleStatus }

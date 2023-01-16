@@ -37,22 +37,22 @@ const Status = {
     /// <summary>
     /// Chưa kích hoạt
     /// </summary>
-    NotActivated: 1,
+    NOT_ACTIVATED: 1,
 
     /// <summary>
     /// Chờ xác nhận
     /// </summary>
-    Pending: 2,
+    PENDING: 2,
 
     /// <summary>
     /// Đang hoạt động
     /// </summary>
-    Active: 3,
+    ACTIVE: 3,
 
     /// <summary>
     /// Ngừng kích hoạt
     /// </summary>
-    Inactive: 4,
+    IN_ACTIVE: 4,
 
 }
 
@@ -61,4 +61,8 @@ const LimitLength = {
     USER_CODE: 20,
     USER_NAME: 100,
 }
-export { StatusCode, State, ErrorCode, LimitLength, Status }
+
+const Frequency = {
+    DUPLICATED: 2
+}
+export { StatusCode, State, ErrorCode, LimitLength, Status, Frequency }

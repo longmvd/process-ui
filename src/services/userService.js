@@ -32,6 +32,22 @@ export const getUserByID = async (user) => {
     return res
 }
 
+/**
+ * Lấy user theo id
+ * Author: MDLONG(01/01/2023)
+ * @param {*} user 
+ * @returns 
+ */
+export const getNewUserCode = async () => {
+    const res = await request.get(`users/newCode`)
+    return res
+}
+
+/**
+ * Thêm mới nhân viên
+ * @param {*} users 
+ * @returns 
+ */
 export const addUser = async (users)=>{
     const res = await request.post(`users/`, users)
     return res

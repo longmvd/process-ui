@@ -48,7 +48,7 @@
     --white-background: #fff;
     --table-tool-height: 60px;
     --remain-height: 210px;
-    --blue-color:  #13b2d8;
+    --blue-color: #13b2d8;
     --green-color: #66d181;
     --orange-color: #f39619;
     --unavailable-color: #616767;
@@ -62,13 +62,13 @@
     font-family: Roboto, Helvetica, Arial, sans-serif;
 }
 
-#app{
+#app {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     color: #2c3e50;
 }
 
-body{
+body {
     /* min-width: 1366px; */
 }
 
@@ -128,9 +128,19 @@ span.required {
 
 .c1 {
     accent-color: var(--primary-color);
-    outline:none;
+    outline: none;
     width: 18px;
     height: 18px;
+}
+
+
+.opacity-disabled {
+    opacity: .5;
+}
+
+.opacity-disabled:hover {
+    accent-color: var(--primary-color);
+    opacity: .5;
 }
 
 .el-wrapper {
@@ -153,7 +163,7 @@ span.required {
     font-weight: 700;
 }
 
-.err-message{
+.err-message {
     color: var(--error-color);
     font-size: 12px;
 }
@@ -162,7 +172,7 @@ span.required {
     color: var(--error-color)
 }
 
-.bold{
+.bold {
     font-weight: 700;
 }
 
@@ -210,11 +220,11 @@ span.required {
     margin-right: 12px;
 }
 
-.h-64{
+.h-64 {
     height: 64px;
 }
 
-.h-70{
+.h-70 {
     height: 70px;
 }
 
@@ -267,7 +277,7 @@ span.required {
     margin: 0;
 }
 
-.mgt-4{
+.mgt-4 {
     margin-top: 4px;
 }
 
@@ -275,7 +285,7 @@ span.required {
     margin-right: 4px;
 }
 
-.mgb-4{
+.mgb-4 {
     margin-bottom: 4px;
 }
 
@@ -361,7 +371,7 @@ span.required {
     font-weight: 600;
 }
 
-.w-60{
+.w-60 {
     width: 60px;
 }
 
@@ -391,7 +401,7 @@ span.required {
     justify-content: center;
 }
 
-.row-reverse{
+.row-reverse {
     flex-direction: row-reverse;
 }
 
@@ -399,54 +409,54 @@ span.required {
     background-color: white;
 }
 
-.cur-point{
+.cur-point {
     cursor: pointer;
 }
 
-.scale-0\.5{
+.scale-0\.5 {
     transform: scale(0.5);
 }
 
-.dot{
+.dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
     margin-right: 8px;
 }
 
-.bg-blue{
+.bg-blue {
     background-color: var(--blue-color);
 }
 
-.bg-green{
+.bg-green {
     background-color: var(--green-color);
 }
 
-.bg-orange{
+.bg-orange {
     background-color: var(--orange-color);
 }
 
-.bg-unavailable{
+.bg-unavailable {
     background-color: var(--unavailable-color);
 }
 
-.color-blue{
+.color-blue {
     color: var(--blue-color);
 }
 
-.color-green{
+.color-green {
     color: var(--green-color);
 }
 
-.color-orange{
+.color-orange {
     color: var(--orange-color);
 }
 
-.color-unavailable{
+.color-unavailable {
     color: var(--unavailable-color);
 }
 
-.text-three-dots{
+.text-three-dots {
     white-space: nowrap;
     overflow: hidden !important;
     text-overflow: ellipsis;

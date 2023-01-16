@@ -22,14 +22,15 @@
         :tabindex="tabindex"
         @input="$emit('update:modelValue', onInput($event))"
         @blur="validate"
-        ref="input"
+        ref="inputRef"
       />
       <i :class="'icon-24 input-icon ' + iconClass" v-if="iconClass"></i>
     </div>
-    <span class="err-message">{{ errorMessage }}</span>
+    <span v-if="!isValid" class="err-message">{{ errorMessage }}</span>
   </div>
 </template>
 <script>
+import { Message } from '@/i18n';
 // import { MESSAGE } from '@/i18n/resources';
 export default {
   props: {
@@ -48,10 +49,18 @@ export default {
     placeholder: String,
     id: String,
     name: String,
-    value: String,
     rules: Array,
     modelValue: String,
     tabindex: Number,
+  },
+  computed:{
+    input(){
+      return this.$refs.inputRef
+    },
+
+    value(){
+      return this.modelValue
+    }
   },
   emits: ["update:modelValue"],
   data() {
@@ -59,9 +68,11 @@ export default {
       isValid: true,
       errorMessage: "",
       ruleList: [],
+      frequencyValue:{},
     };
   },
   methods: {
+
     onInput(event) {
       this.isValid = true;
       return event.target.value;
@@ -93,6 +104,9 @@ export default {
             } else if (rule?.hasOwnProperty("maxLength")) {
               isValid = this.checkMaxLength(rule["maxLength"], rule.cLength);
               if (!isValid) break;
+            // } else if (rule?.hasOwnProperty("duplicated")) {
+            //   isValid = this.checkDuplicated(rule["duplicated"], this.frequencyValue);
+            //   if (!isValid) break;
             }
           }
         }
@@ -177,12 +191,37 @@ export default {
     },
 
     /**
+     * Kiểm tra trùng
+     * Author: MDLONG(30/10/2022)
+     * @param {string} message
+     * @param {integer} min
+     */
+    checkDuplicated(message, frequency) {
+      let value = this.modelValue;
+      this.isValid = true;
+      this.frequencyValue = frequency
+      let freq = frequency[value]
+      if (value && freq) {
+        let msg = freq <= 1
+            ? undefined
+            : message || Message.DUPLICATED_VALUE;
+        this.errorMessage = msg;
+        if (msg != undefined) {
+          this.isValid = false;
+          return false
+        };
+        return true;
+      }
+      return true;
+    },
+
+    /**
      * Kiểm tra ký tự tối đa
      * Author: MDLONG(30/10/2022)
      * @param {string} message
      * @param {integer} min
      */
-    checkMaxLength(message, max) {
+     checkMaxLength(message, max) {
       let value = this.modelValue;
       if (value) {
         let msg =
@@ -201,7 +240,7 @@ export default {
      * Author: MDLONG(30/10/2022)
      */
     focus() {
-      this.$refs.input.focus();
+      this.input.focus();
     },
   },
 };
