@@ -6,7 +6,7 @@
         :key="item.id"
         :to="item.to"
         class="list__item"
-        :class="[item.itemClass, { active: isSelected(item) }]"
+        :class="[item.itemClass, { 'router-link-exact-active': isSelected(item) }]"
         @click="selectItem(item)"
       >
         <i :class="item.iconClass"></i>
